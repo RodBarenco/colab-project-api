@@ -1,0 +1,8 @@
+.env
+.test.env
+init.ps1
+test-api.exe
+backend-api.exe
+docker-compose.yml
+process.pid
+commit.ps1
