@@ -43,7 +43,7 @@ func StartServer() {
 	}
 
 	//call main router
-	router := routes.NewRouter()
+	router := routes.MainRouter()
 
 	// start server...
 	srv := &http.Server{

@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/cors"
 )
 
-func NewRouter() http.Handler {
+func MainRouter() http.Handler {
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -20,13 +20,11 @@ func NewRouter() http.Handler {
 	}))
 
 	// Roteador para usuários não logados
-	v1Router := chi.NewRouter()
-	v1Router.Mount("/", GeneralRoutes())
+	v1Router := GeneralRoutes()
 	router.Mount("/v1", v1Router)
 
 	// Roteador para usuários logados
-	v2Router := chi.NewRouter()
-	v2Router.Mount("/user", UserRoutes())
+	v2Router := UserRoutes()
 	router.Mount("/v2", v2Router)
 
 	return router
