@@ -4,33 +4,70 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"gorm.io/datatypes"
 )
 
 func RespondWithError(w http.ResponseWriter, code int, msg string) {
-	if code >= 500 {
-		log.Println("Responding with 5XX error:", msg)
+
+	if code < http.StatusBadRequest || code >= http.StatusInternalServerError {
+		code = http.StatusInternalServerError
 	}
-	type errResponse struct {
+
+	var friendlyMsg string
+	switch code {
+	case http.StatusBadRequest:
+		friendlyMsg = "Bad Request"
+	case http.StatusUnauthorized:
+		friendlyMsg = "Unauthorized"
+	case http.StatusForbidden:
+		friendlyMsg = "Forbidden"
+	case http.StatusNotFound:
+		friendlyMsg = "Not Found"
+	case http.StatusInternalServerError:
+		friendlyMsg = "Internal Server Error"
+	default:
+		friendlyMsg = "Error"
+	}
+
+	type ErrorResponse struct {
 		Error string `json:"error"`
 	}
 
-	RespondWithJSON(w, code, errResponse{
-		Error: msg,
-	})
+	errorResponse := ErrorResponse{
+		Error: friendlyMsg + ": " + msg,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+
+	RespondWithJSON(w, code, errorResponse)
 }
 
 func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	dat, err := json.Marshal(toGORMJSON(payload))
+
+	if code < http.StatusOK || code >= http.StatusInternalServerError {
+		code = http.StatusOK
+	}
+
+	data, err := json.Marshal(toGORMJSON(payload))
 	if err != nil {
 		log.Printf("Failed to marshal JSON response %v", payload)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-type", "application/json")
+
+	dataSize := len(data)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Length", strconv.Itoa(dataSize))
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	w.WriteHeader(code)
-	w.Write(dat)
+	if _, err := w.Write(data); err != nil {
+		log.Printf("Failed to write JSON response: %v", err)
+	}
 }
 
 func toGORMJSON(data interface{}) interface{} {

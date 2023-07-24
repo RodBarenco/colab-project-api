@@ -1,4 +1,5 @@
 If you prefer to read it in [English](#project-colab---backend---english)
+Si prefieres leerlo en [Español](#proyecto-colab---backend---español)
 
 # Projeto Colab - Backend - Português
 
@@ -82,4 +83,45 @@ This is an open-source project and is being developed for educational purposes. 
 
 Project Colab is licensed under the MIT License. See the LICENSE file for more information.
 
+---
+
+# Proyecto Colab - Backend - Español
+
+Este es solo el primer commit del Proyecto Colab. Es el esqueleto del backend que se utilizará para un sitio de intercambio de artículos académicos y trabajos artísticos. También se está desarrollando con fines educativos.
+
+## Sobre el Proyecto - Motivación
+
+A menudo, los estudiantes universitarios, grupos de investigación e incluso personas de secundaria no tienen un lugar adecuado para publicar sus artículos académicos y trabajos artísticos. El Proyecto Colab tiene como objetivo llenar este vacío, proporcionando una plataforma moderna para compartir contenido académico y artístico.
+
+## Objetivos
+
+El objetivo principal del Proyecto Colab es crear una plataforma amigable y accesible, donde estudiantes, investigadores y artistas puedan compartir y difundir sus trabajos de manera libre y abierta.
+
+### Funcionalidades Planeadas
+
+- Creación y gestión de perfiles de usuarios
+- Envío para aceptación y publicación, así como edición de artículos y trabajos artísticos
+- Compartir rápidamente
+- Comentarios e interacción entre los usuarios (seguir a autores, dar "me gusta" en artículos, comunicarse con autores que estén abiertos a colaborar)
+- Búsqueda y filtrado de contenido por tema, autor y más
+- ... (Agregue otras funcionalidades planeadas, si las hay)
+
+## Contribuciones
+
+¡Las contribuciones son bienvenidas! Siéntete libre de enviar pull requests con mejoras, correcciones de errores y nuevas funcionalidades.
+Personas de todas las áreas son bienvenidas.
+
+## Próximo Paso:
+
+Http-handlers - Marshalling - Authentication and Authorization - Autenticación y Autorización
+
+Para el próximo commit, nos enfocaremos en implementar recursos de autenticación y autorización. Esta etapa es crucial para garantizar un acceso seguro a la plataforma y controlar los permisos de los usuarios.
+
+## Aviso Legal
+
+Este es un proyecto de código abierto y se está desarrollando con fines educativos. No se garantiza que este proyecto sea implementado en producción o utilizado comercialmente.
+
+## Licencia
+
+El Proyecto Colab está licenciado bajo la Licencia MIT. Consulta el archivo LICENSE para obtener más información.
 

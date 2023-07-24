@@ -3,13 +3,14 @@ package routes
 import (
 	"net/http"
 
+	"github.com/RodBarenco/colab-project-api/handlers"
 	"github.com/go-chi/chi"
 )
 
 func UserRoutes() http.Handler {
 	router := chi.NewRouter()
 
-	// Definir rotas para os usuários logados aqui
+	router.Get("/testreadiness", handlers.HandlerReadiness)
 
 	return router
 }
