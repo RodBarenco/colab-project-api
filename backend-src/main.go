@@ -16,7 +16,7 @@ func main() {
 
 	arg := os.Args[1]
 
-	if err := handlers.InitHandlers(); err != nil {
+	if err := handlers.InitHandlers(arg); err != nil {
 		log.Fatalf("Failed to initialize handlers: %v", err)
 	}
 
@@ -25,7 +25,7 @@ func main() {
 		connection.StartServer()
 
 	case "2":
-		connection.StartTest()
+		connection.StartTestServer()
 
 	default:
 		log.Fatal("Was not possible to start Dev/Test mod!!!")

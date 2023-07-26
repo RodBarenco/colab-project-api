@@ -17,14 +17,7 @@ func isValidEmail(email string) bool {
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		FirstName   string
-		LastName    string
-		Email       string
-		Password    string
-		DateOfBirth time.Time
-	}
-
+	var body auth.SignupParams
 	// Read the request body into the 'body' variable using json.NewDecoder
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
@@ -59,13 +52,34 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate that if Ccourse is provided, CurrentlyID must also be provided
+	if body.Ccourse != "" && body.CurrentlyID == nil {
+		RespondWithError(w, http.StatusBadRequest, "Ccourse can only be added if CurrentlyID is provided")
+		return
+	}
+
+	// Validate that if Lcourse is provided, LastEducationID must also be provided
+	if body.Lcourse != "" && body.LastEducationID == nil {
+		RespondWithError(w, http.StatusBadRequest, "Lcourse can only be added if LastEducationID is provided")
+		return
+	}
+
 	// Convert the 'body' data into SignupParams
 	params := auth.SignupParams{
-		FirstName:   body.FirstName,
-		LastName:    body.LastName,
-		Email:       body.Email,
-		Password:    body.Password,
-		DateOfBirth: body.DateOfBirth,
+		FirstName:       body.FirstName,
+		LastName:        body.LastName,
+		Email:           body.Email,
+		Password:        body.Password,
+		DateOfBirth:     body.DateOfBirth,
+		Nickname:        body.Nickname,
+		Field:           body.Field,
+		Interests:       body.Interests,
+		Biography:       body.Biography,
+		Lcourse:         body.Lcourse,
+		Ccourse:         body.Ccourse,
+		LastEducationID: body.LastEducationID,
+		CurrentlyID:     body.CurrentlyID,
+		OpenToColab:     body.OpenToColab,
 	}
 
 	// Access the gorm.DB connection using dbAccessor
@@ -78,11 +92,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Call the Signup function passing the validated params and the database connection
-	err = auth.Signup(r.Context(), db, params)
+	statusCode, err := auth.Signup(r.Context(), db, params)
 	if err != nil {
-		// Get the specific error message from the Signup function
+
 		errorMessage := fmt.Sprintf("Error during signup: %v", err)
-		RespondWithError(w, http.StatusInternalServerError, errorMessage)
+		RespondWithError(w, statusCode, errorMessage)
 		return
 	}
 
@@ -98,7 +112,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond with the SignupRes JSON
-	RespondWithJSON(w, http.StatusOK, response)
+	RespondWithJSON(w, http.StatusCreated, response)
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {

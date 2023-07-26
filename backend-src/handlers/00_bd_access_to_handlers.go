@@ -14,11 +14,20 @@ import (
 var dbAccessor *gorm.DB
 
 // InitDB initializes the database connection for the handlers package
-func InitHandlers() error {
+func InitHandlers(envType string) error {
+	var envFileName string
+	switch envType {
+	case "1":
+		envFileName = ".env"
+	case "2":
+		envFileName = ".test.env"
+	default:
+		return fmt.Errorf("invalid envType: must be 1 or 2")
+	}
 
-	err := godotenv.Load(".env")
+	err := godotenv.Load(envFileName)
 	if err != nil {
-		fmt.Println("Erro ao carregar arquivo .env:", err)
+		log.Fatalf("failed to load %s file: %v", envFileName, err)
 	}
 
 	dsn := os.Getenv("DATABASE_URL")
@@ -28,10 +37,10 @@ func InitHandlers() error {
 
 	dbAccessInstance, err := db.DBaccess(dsn)
 	if err != nil {
-		return err
+		log.Fatalf("failed to connect to the database: %v", err)
 	}
 
 	dbAccessor = dbAccessInstance.DB
-	fmt.Println("Handlers connected successfully!")
+	log.Println("Handlers connected successfully!")
 	return nil
 }

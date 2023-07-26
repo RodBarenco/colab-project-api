@@ -24,4 +24,5 @@ type User struct {
 	LastEducationID *uuid.UUID `gorm:"null;type:uuid"`
 	CurrentlyID     *uuid.UUID `gorm:"null;type:uuid"`
 	OpenToColab     bool
+	CreatedAt       time.Time `gorm:"autoCreateTime"`
 }

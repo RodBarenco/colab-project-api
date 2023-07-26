@@ -42,6 +42,7 @@ func RespondWithError(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(code)
 
 	RespondWithJSON(w, code, errorResponse)
 }
