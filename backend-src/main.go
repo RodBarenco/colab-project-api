@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/RodBarenco/colab-project-api/connection"
+	"github.com/RodBarenco/colab-project-api/handlers"
 )
 
 func main() {
@@ -14,6 +15,10 @@ func main() {
 	}
 
 	arg := os.Args[1]
+
+	if err := handlers.InitHandlers(); err != nil {
+		log.Fatalf("Failed to initialize handlers: %v", err)
+	}
 
 	switch arg {
 	case "1":

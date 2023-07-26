@@ -11,6 +11,7 @@ func UserRoutes() http.Handler {
 	router := chi.NewRouter()
 
 	router.Get("/testreadiness", handlers.HandlerReadiness)
+	router.Get("/testerror", handlers.HandlerError)
 
 	return router
 }

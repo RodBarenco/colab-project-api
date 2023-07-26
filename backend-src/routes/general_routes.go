@@ -11,8 +11,10 @@ import (
 func GeneralRoutes() http.Handler {
 	router := chi.NewRouter()
 
-	// articles
 	router.Get("/testreadiness", handlers.HandlerReadiness)
+	router.Get("/testerror", handlers.HandlerError)
+
+	// articles
 	router.Get("/articles", handlers.GetLatesThousandtArticlesHandler)
 	router.Get("/articles/home", handlers.GetLatestFiftyArticlesHandler)
 	router.Get("/articles/Name/{name}", handlers.GetArticlesByNameHandler)

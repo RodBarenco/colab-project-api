@@ -9,8 +9,6 @@ import (
 	"github.com/RodBarenco/colab-project-api/db"
 	"github.com/RodBarenco/colab-project-api/routes"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func StartServer() {
@@ -20,7 +18,7 @@ func StartServer() {
 		fmt.Println("Erro ao carregar arquivo .env:", err)
 	}
 
-	// connecting with PostgreSQL
+	// Connecting with PostgreSQL
 	portString := os.Getenv("PORT")
 	if portString == "" {
 		log.Fatal("PORT is not found in the environment")
@@ -31,21 +29,25 @@ func StartServer() {
 		log.Fatal("DATABASE_URL is not found in the environment")
 	}
 
-	gormDB, err := gorm.Open(postgres.Open(dsn), nil)
+	// Use DBaccess function from the db package to get the dbAccess instance
+	dbAccessInstance, err := db.DBaccess(dsn)
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Call migration
-	err = db.Migrate(gormDB)
+	// Access the gorm.DB connection from the dbAccess instance
+	GormDB := dbAccessInstance.DB
+
+	// Call migration from the db package, passing the gorm.DB connection
+	err = db.Migrate(GormDB)
 	if err != nil {
 		log.Fatal("Failed to perform migration:", err)
 	}
 
-	//call main router
+	// Call main router from the routes package
 	router := routes.MainRouter()
 
-	// start server...
+	// Start the server...
 	srv := &http.Server{
 		Handler: router,
 		Addr:    ":" + portString,
