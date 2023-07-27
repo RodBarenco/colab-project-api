@@ -19,7 +19,7 @@ type SignupParams struct {
 	LastName        string
 	Email           string
 	Password        string
-	DateOfBirth     time.Time
+	DateOfBirth     string
 	Nickname        string
 	Field           string
 	Interests       []*db.Interest
@@ -35,8 +35,14 @@ type SignupParams struct {
 // Signup creates a new user and saves it to the database.
 func Signup(ctx context.Context, DB *gorm.DB, params SignupParams) (int, error) {
 	// Check if required fields are not empty
-	if params.FirstName == "" || params.LastName == "" || params.Email == "" || params.Password == "" || params.DateOfBirth.IsZero() {
+	if params.FirstName == "" || params.LastName == "" || params.Email == "" || params.Password == "" || params.DateOfBirth == "" {
 		return http.StatusBadRequest, fmt.Errorf("all required fields must be provided")
+	}
+
+	// Parse the date of birth to the desired format (YYYY-MM-DD)
+	dateOfBirth, err := time.Parse("2006-01-02", params.DateOfBirth)
+	if err != nil {
+		return http.StatusBadRequest, fmt.Errorf("invalid date of birth format. It must be in the format YYYY-MM-DD")
 	}
 
 	// Hash the password
@@ -52,7 +58,7 @@ func Signup(ctx context.Context, DB *gorm.DB, params SignupParams) (int, error) 
 		LastName:        params.LastName,
 		Email:           params.Email,
 		Password:        string(hashedPassword),
-		DateOfBirth:     params.DateOfBirth,
+		DateOfBirth:     dateOfBirth,
 		Nickname:        params.Nickname,
 		Field:           params.Field,
 		Interests:       params.Interests,

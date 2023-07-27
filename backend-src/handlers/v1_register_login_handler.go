@@ -4,17 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
-	"time"
+	"strings"
+	"sync"
 
 	"github.com/RodBarenco/colab-project-api/auth"
 	"github.com/RodBarenco/colab-project-api/res"
+	"github.com/RodBarenco/colab-project-api/utils"
 )
-
-func isValidEmail(email string) bool {
-	emailRegex := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	return regexp.MustCompile(emailRegex).MatchString(email)
-}
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var body auth.SignupParams
@@ -25,42 +21,110 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create a slice to collect validation errors
+	validationErrors := []string{}
+
 	// Perform validation checks on the request data
-	if len(body.FirstName) < 2 {
-		RespondWithError(w, http.StatusBadRequest, "First name must have at least 2 characters")
-		return
+	if !utils.IsValidFirstName(body.FirstName) {
+		validationErrors = append(validationErrors, "First name must have 2 to 25 characters - and valid characters-words")
 	}
 
-	if len(body.LastName) < 1 {
-		RespondWithError(w, http.StatusBadRequest, "Last name must have at least 2 characters")
-		return
+	if !utils.IsValidLastName(body.LastName) {
+		validationErrors = append(validationErrors, "Last name must have 1 to 40 characters - and valid characters-words")
 	}
 
-	if !isValidEmail(body.Email) {
-		RespondWithError(w, http.StatusBadRequest, "Invalid email format")
-		return
+	if !utils.IsValidNickname(body.Nickname) {
+		validationErrors = append(validationErrors, "First name must have 2 to 20 characters - and valid characters-words")
 	}
 
-	if len(body.Password) < 5 {
-		RespondWithError(w, http.StatusBadRequest, "Password must have at least 5 characters")
-		return
+	if !utils.IsValidEmail(body.Email) {
+		validationErrors = append(validationErrors, "Invalid email format")
+	}
+
+	if !utils.IsValidPassword(body.Password) {
+		validationErrors = append(validationErrors, "Password must have at least 5 characters - and valid characters-words")
 	}
 
 	// Check if the date of birth is valid (not greater than current date)
-	if body.DateOfBirth.After(time.Now()) {
-		RespondWithError(w, http.StatusBadRequest, "Invalid date of birth")
-		return
+	if !utils.IsValidDateOfBirth(body.DateOfBirth) {
+		validationErrors = append(validationErrors, "Invalid date of birth")
 	}
 
-	// Validate that if Ccourse is provided, CurrentlyID must also be provided
-	if body.Ccourse != "" && body.CurrentlyID == nil {
-		RespondWithError(w, http.StatusBadRequest, "Ccourse can only be added if CurrentlyID is provided")
-		return
+	if !utils.IsValidField(body.Field) {
+		validationErrors = append(validationErrors, "Field must have 2 to 50 characters - and valid characters-words")
 	}
 
-	// Validate that if Lcourse is provided, LastEducationID must also be provided
-	if body.Lcourse != "" && body.LastEducationID == nil {
-		RespondWithError(w, http.StatusBadRequest, "Lcourse can only be added if LastEducationID is provided")
+	if !utils.IsValidBiography(body.Biography) {
+		validationErrors = append(validationErrors, "Biography must have 3 to 500 characters - and valid characters-words")
+	}
+
+	// Perform parallel database validations
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	// Parallel validation for Ccourse
+	go func() {
+		defer wg.Done()
+		if body.Ccourse != "" && body.CurrentlyID == nil {
+			validationErrors = append(validationErrors, "CurrentlyID must be provided when Ccourse is provided")
+			return
+		}
+
+		ccourseValidation := utils.IsValidCcourse(body.Ccourse, body.CurrentlyID, dbAccessor)
+		if !ccourseValidation.IsValid {
+			if !ccourseValidation.ExistsInDB {
+				validationErrors = append(validationErrors, "Institution of current course does not exist or has not been registered")
+			} else {
+				validationErrors = append(validationErrors, "Invalid Ccourse format")
+			}
+		}
+	}()
+
+	// Parallel validation for Lcourse
+	go func() {
+		defer wg.Done()
+		if body.Lcourse != "" && body.LastEducationID == nil {
+			validationErrors = append(validationErrors, "LastEducationID must be provided when Lcourse is provided")
+			return
+		}
+
+		lcourseValidation := utils.IsValidLcourse(body.Lcourse, body.LastEducationID, dbAccessor)
+		if !lcourseValidation.IsValid {
+			if !lcourseValidation.ExistsInDB {
+				validationErrors = append(validationErrors, "Institution of last course does not exist or has not been registered")
+			} else {
+				validationErrors = append(validationErrors, "Invalid Lcourse format")
+			}
+		}
+	}()
+
+	// Parallel validation for interests
+	go func() {
+		defer wg.Done()
+		isValidInterests, interestsValidationErr := utils.IsValidInterests(body.Interests, dbAccessor)
+		if interestsValidationErr != nil {
+			validationErrors = append(validationErrors, interestsValidationErr.Error())
+		} else if !isValidInterests {
+			validationErrors = append(validationErrors, "One or more interests are invalid or not registered")
+		}
+	}()
+
+	wg.Wait()
+
+	// CHECK VALIDATION ERRORS
+	if len(validationErrors) > 0 {
+		formattedErrors := make([]string, len(validationErrors))
+
+		// Format each error message with the corresponding number
+		for i, errMsg := range validationErrors {
+			formattedErrors[i] = fmt.Sprintf("%d : %s", i+1, errMsg)
+		}
+
+		// Concatenate the formatted error messages into a single string
+		errorMessage := strings.Join(formattedErrors, " , ")
+
+		// Respond with the error message
+		RespondWithError(w, http.StatusBadRequest, "{"+errorMessage+"}")
 		return
 	}
 
@@ -94,7 +158,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Call the Signup function passing the validated params and the database connection
 	statusCode, err := auth.Signup(r.Context(), db, params)
 	if err != nil {
-
 		errorMessage := fmt.Sprintf("Error during signup: %v", err)
 		RespondWithError(w, statusCode, errorMessage)
 		return
