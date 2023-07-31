@@ -1,3 +1,4 @@
+```
 Func main(arg) calls handlers(arg) from the handlers package
 |
 |-- If arg == "test"
@@ -37,3 +38,4 @@ Any server call hits MainRouter, which directs to v1, v2, or v3
     |
     V
 Handlers manage the functions called by HTTP requests correctly using the utils, res packages, and functions like RespondWithError and RespondWithJSON from the handlers package
+```

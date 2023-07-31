@@ -1,7 +1,7 @@
 If you prefer to read it in [English](#project-colab---backend---english)
 Si prefieres leerlo en [Español](#proyecto-colab---backend---español)
 
-[![Flow Chart](https://placehold.it/60x25/55ff99/ffffff?text=Flow+Chart)](./initiation_flowchart.md)
+[![Flow Chart](https://via.placeholder.com/60x25/77ff99/bb1111?text=Flow%2BChart)](./initiation_flowchart.md)
 
 # Projeto Colab - Backend - Português
 
