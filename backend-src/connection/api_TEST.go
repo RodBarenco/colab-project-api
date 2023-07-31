@@ -38,7 +38,13 @@ func StartTestServer() {
 		log.Fatal("Failed to perform migration:", err)
 	}
 
-	router := routes.MainRouter()
+	// Call main router from the routes package
+	secret := os.Getenv("SECRET")
+	if secret == "" {
+		log.Fatal("SECRET is not found in the environment")
+	}
+
+	router := routes.MainRouter(secret)
 
 	// Start the server...
 	srv := &http.Server{

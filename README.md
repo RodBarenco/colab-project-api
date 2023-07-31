@@ -1,9 +1,15 @@
 If you prefer to read it in [English](#project-colab---backend---english)
 Si prefieres leerlo en [Español](#proyecto-colab---backend---español)
 
+[![Flow Chart](https://placehold.it/60x25/55ff99/ffffff?text=Flow+Chart)](./initiation_flowchart.md)
+
 # Projeto Colab - Backend - Português
 
-Este é apenas o primeiro commit do Projeto Colab. É o esqueleto do backend que será usado para um site de compartilhamento de artigos acadêmicos e trabalhos de arte. Ele está sendo desenvolvido também com fins educacionais.
+Estou satisfeito com o andamento do projeto, e gostaria de destacar que ele está sendo desenvolvido também com fins educacionais, visando o aprendizado e aprimoramento de minhas habilidades de desenvolvimento.
+
+Nesta etapa inicial, já temos uma estrutura básica do back-end implementada. As rotas estão organizadas em três grupos principais: gerais (v1), de usuários (v2) e de administradores (v3). Isso foi possível através da utilização de um middleware para realizar a separação e garantir a segurança das rotas.
+
+Além disso, existe uma função de autenticação que utiliza JWT (JSON Web Tokens) para garantir a segurança e controle de acesso às rotas. Isso permitirá que apenas usuários autenticados e autorizados acessem determinadas partes da aplicação.
 
 ## Sobre o Projeto - Motivação
 
@@ -29,9 +35,11 @@ Pessoas de todas as áreas são bem-vindas.
 
 ## Próximo Passo:
 
-Http-handlers - Marshalling - Authentication and Authorization - Autenticação e Autorização
+Rotas para Administradores - testes para as funções de registro, login, autenticação e autorização
 
-Para o próximo commit, vamos nos concentrar em implementar recursos de autenticação e autorização. Esta etapa é crucial para garantir o acesso seguro à plataforma e controlar as permissões dos usuários.
+Já implementamos as funções responsáveis pelo registro e login com autenticação, além de adicionar as validações necessárias usando expressões regulares. No próximo passo, continuaremos a aprimorar o projeto Colab.
+
+A primeira tarefa será adicionar testes para as funções de autenticação, garantindo que o sistema funcione conforme o esperado e que qualquer alteração futura não afete seu comportamento. Testes são essenciais para mantermos a integridade do código e evitar regressões.
 
 ## Aviso Legal
 
@@ -45,7 +53,11 @@ O Projeto Colab é licenciado sob a Licença MIT. Consulte o arquivo LICENSE par
 
 # Project Colab - Backend - English
 
-This is just the first commit of Project Colab. It is a backend skeleton that will be used for a website for sharing academic articles and artworks. It is also being developed for educational purposes.
+I am pleased with the progress of the project, and I would like to emphasize that it is also being developed for educational purposes, aiming to learn and enhance my development skills.
+
+In this initial stage, we already have a basic structure of the backend implemented. The routes are organized into three main groups: general (v1), user-specific (v2), and administrator-specific (v3). This was achieved by using a middleware to perform this separation and ensure the security of the routes.
+
+Furthermore, there is an authentication function that uses JWT (JSON Web Tokens) to ensure the security and access control of the routes. This will allow only authenticated and authorized users to access certain parts of the application.
 
 ## About the Project - Motivation
 
@@ -71,9 +83,11 @@ People from all fields are welcome to contribute.
 
 ## Next Step
 
-Http-handlers - Marshalling - and Authentication and Authorization 
+Routes for Administrators - Tests for Registration, Login, Authentication, and Authorization Functions
 
-For the next commit, I will focus on implementing authentication and authorization features. This step is crucial to ensure secure access to the platform and control user permissions.
+We have already implemented the functions responsible for registration and login with authentication, as well as added necessary validations using regular expressions. In the next step, we will continue to improve the Colab project.
+
+The first task will be to add tests for the authentication functions, ensuring that the system works as expected and that any future changes do not affect its behavior. Tests are essential to maintain code integrity and avoid regressions.
 
 ## Legal Notice
 
@@ -87,7 +101,11 @@ Project Colab is licensed under the MIT License. See the LICENSE file for more i
 
 # Proyecto Colab - Backend - Español
 
-Este es solo el primer commit del Proyecto Colab. Es el esqueleto del backend que se utilizará para un sitio de intercambio de artículos académicos y trabajos artísticos. También se está desarrollando con fines educativos.
+Estoy satisfecho con el progreso del proyecto, y me gustaría destacar que también se está desarrollando con fines educativos, con el objetivo de aprender y mejorar mis habilidades de desarrollo.
+
+En esta etapa inicial, ya tenemos una estructura básica del backend implementada. Las rutas están organizadas en tres grupos principales: generales (v1), específicas para usuarios (v2) y específicas para administradores (v3). Esto se logró utilizando un middleware para realizar esta separación y garantizar la seguridad de las rutas.
+
+Además, existe una función de autenticación que utiliza JWT (JSON Web Tokens) para garantizar la seguridad y el control de acceso a las rutas. Esto permitirá que solo los usuarios autenticados y autorizados accedan a ciertas partes de la aplicación.
 
 ## Sobre el Proyecto - Motivación
 
@@ -113,9 +131,11 @@ Personas de todas las áreas son bienvenidas.
 
 ## Próximo Paso:
 
-Http-handlers - Marshalling - Authentication and Authorization - Autenticación y Autorización
+Rutas para Administradores - Pruebas para las Funciones de Registro, Inicio de Sesión, Autenticación y Autorización
 
-Para el próximo commit, nos enfocaremos en implementar recursos de autenticación y autorización. Esta etapa es crucial para garantizar un acceso seguro a la plataforma y controlar los permisos de los usuarios.
+Ya hemos implementado las funciones responsables del registro e inicio de sesión con autenticación, además de agregar validaciones necesarias mediante expresiones regulares. En el próximo paso, continuaremos mejorando el proyecto Colab.
+
+La primera tarea será agregar pruebas para las funciones de autenticación, asegurándonos de que el sistema funcione como se espera y que cualquier cambio futuro no afecte su comportamiento. Las pruebas son esenciales para mantener la integridad del código y evitar regresiones.
 
 ## Aviso Legal
 

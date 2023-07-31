@@ -12,3 +12,8 @@ type SignupRes struct {
 	User    UserGetedResponse `json:"user"`
 	Message string            `json:"message"`
 }
+
+type LoginRes struct {
+	Message string `json:"message"`
+	Token   string `json:"token"`
+}

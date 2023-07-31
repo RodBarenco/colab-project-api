@@ -45,7 +45,12 @@ func StartServer() {
 	}
 
 	// Call main router from the routes package
-	router := routes.MainRouter()
+	secret := os.Getenv("SECRET")
+	if secret == "" {
+		log.Fatal("SECRET is not found in the environment")
+	}
+
+	router := routes.MainRouter(secret)
 
 	// Start the server...
 	srv := &http.Server{

@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -33,7 +32,7 @@ type SignupParams struct {
 }
 
 // Signup creates a new user and saves it to the database.
-func Signup(ctx context.Context, DB *gorm.DB, params SignupParams) (int, error) {
+func Signup(DB *gorm.DB, params SignupParams) (int, error) {
 	// Check if required fields are not empty
 	if params.FirstName == "" || params.LastName == "" || params.Email == "" || params.Password == "" || params.DateOfBirth == "" {
 		return http.StatusBadRequest, fmt.Errorf("all required fields must be provided")

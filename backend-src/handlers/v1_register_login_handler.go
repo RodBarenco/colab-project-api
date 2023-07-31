@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -34,7 +35,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !utils.IsValidNickname(body.Nickname) {
-		validationErrors = append(validationErrors, "First name must have 2 to 20 characters - and valid characters-words")
+		validationErrors = append(validationErrors, "Nickname must have 2 to 20 characters - and valid characters-words")
 	}
 
 	if !utils.IsValidEmail(body.Email) {
@@ -156,7 +157,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Call the Signup function passing the validated params and the database connection
-	statusCode, err := auth.Signup(r.Context(), db, params)
+	statusCode, err := auth.Signup(db, params)
 	if err != nil {
 		errorMessage := fmt.Sprintf("Error during signup: %v", err)
 		RespondWithError(w, statusCode, errorMessage)
@@ -179,5 +180,48 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement the logic for user login.
+	var body auth.LoginParams
+	// Read the request body into the 'body' variable using json.NewDecoder
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Validate the email format
+	if !utils.IsValidEmail(body.Email) {
+		RespondWithError(w, http.StatusBadRequest, "Invalid email format")
+		return
+	}
+
+	// Validate the password format
+	if !utils.IsValidPassword(body.Password) {
+		RespondWithError(w, http.StatusBadRequest, "Password must have at least 5 characters - and valid characters-words")
+		return
+	}
+
+	// Access the gorm.DB connection using dbAccessor
+	db := dbAccessor
+
+	// Call the Login function passing the validated params and the database connection
+	tokenString, statusCode, err := auth.Login(db, body, jwtSecret)
+	if err != nil {
+		errorMessage := fmt.Sprintf("Error during login: %v", err)
+		RespondWithError(w, statusCode, errorMessage)
+		return
+	}
+
+	// Set the token in the request context
+	ctx := context.WithValue(r.Context(), "jwtToken", tokenString)
+
+	// Call the next handler with the updated context.
+	r = r.WithContext(ctx)
+
+	response := res.LoginRes{
+		Message: "Login successful!",
+		Token:   tokenString,
+	}
+
+	// Respond with a success message
+	RespondWithJSON(w, statusCode, response)
 }

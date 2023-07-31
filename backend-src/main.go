@@ -20,6 +20,10 @@ func main() {
 		log.Fatalf("Failed to initialize handlers: %v", err)
 	}
 
+	if err := handlers.JwtSecret(arg); err != nil {
+		log.Fatalf("Failed to initialize JwtSecret: %v", err)
+	}
+
 	switch arg {
 	case "1":
 		connection.StartServer()

@@ -3,11 +3,12 @@ package routes
 import (
 	"net/http"
 
+	"github.com/RodBarenco/colab-project-api/auth"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 )
 
-func MainRouter() http.Handler {
+func MainRouter(secretKey string) http.Handler {
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -25,7 +26,11 @@ func MainRouter() http.Handler {
 
 	// Roteador para usuários logados
 	v2Router := UserRoutes()
-	router.Mount("/v2", v2Router)
+	router.Mount("/v2", auth.AuthMiddleware("user", secretKey, v2Router))
+
+	// Roteador para adms logados
+	v3Router := AdmRoutes()
+	router.Mount("/v3", auth.AuthMiddleware("admin", secretKey, v3Router))
 
 	return router
 }
