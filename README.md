@@ -1,7 +1,7 @@
 If you prefer to read it in [English](#project-colab---backend---english)
 Si prefieres leerlo en [Español](#proyecto-colab---backend---español)
 
-[![Flow Chart](https://via.placeholder.com/60x25/77ff99/bb1111?text=Flow%2BChart)](./initiation_flowchart.md)
+[![](https://img.shields.io/badge/FlowChart%20-8AbBE2)](./FlowChart.png) [![](https://img.shields.io/badge/Setup-Guide%20-55ea85)](./setup-guide.md)
 
 # Projeto Colab - Backend - Português
 
