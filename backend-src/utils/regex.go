@@ -122,9 +122,19 @@ func IsValidPassword(password string) bool {
 		return false
 	}
 
-	// Check if the password matches the required pattern (at least 5 characters)
-	passwordRegex := `^[A-Za-z0-9!@#$%^&*()_+=\-{}\[\]:;"'<>,.?/|\\]{5,}$`
-	return regexp.MustCompile(passwordRegex).MatchString(password)
+	// Check if the password matches the required pattern (at least 5 characters and no forbidden characters)
+	passwordRegex := `^[^\p{C}\/.;:* ]{5,30}$`
+	if !regexp.MustCompile(passwordRegex).MatchString(password) {
+		return false
+	}
+
+	// Check if the password does not contain strings like \\n, \\t or \\r
+	if strings.Contains(password, "\\n") || strings.Contains(password, "\\t") || strings.Contains(password, "\\r") {
+		return false
+	}
+
+	// If passed all checks, return true
+	return true
 }
 
 func IsValidNickname(nickname string) bool {

@@ -3,101 +3,15 @@ package handlers
 
 import (
 	"bytes"
-	"log"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
-	"github.com/joho/godotenv"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"github.com/RodBarenco/colab-project-api/utils"
 )
 
-// -----------------------PREPARE REFERENCES-------------------------------------------
-
-var StandardRequestBody = []byte(`{
-	"FirstName": "Joe",
-	"LastName": "Doe",
-	"Email": "exemple@example.com",
-	"Password": "123456",
-	"DateOfBirth": "1990-01-01",
-	"Nickname": "johndoe",
-	"Field": "Software Engineering",
-	"Biography": "A passionate software engineer.",
-	"OpenToColab": true
-}`)
-
-func setupTestEnvironment(t *testing.T) func() {
-	err := godotenv.Load("../.test.env")
-	if err != nil {
-		log.Fatalf("failed to load .test.env")
-	}
-
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		log.Fatal("DATABASE_URL is not found in the environment")
-	}
-	// discart log messages from DB
-	var buf bytes.Buffer
-	customLogger := logger.New(
-		log.New(&buf, "\r\n", log.LstdFlags),
-		logger.Config{
-			SlowThreshold:             0,
-			LogLevel:                  logger.Silent,
-			IgnoreRecordNotFoundError: true,
-			Colorful:                  false,
-		},
-	)
-
-	// gorm uses cunstonlogger
-	dbAccessTest, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: customLogger,
-	})
-	if err != nil {
-		panic("Failed to connect to the database")
-	}
-
-	dbAccessor = dbAccessTest
-	return func() {
-		// Add any cleanup logic here if needed ......
-	}
-}
-
-func printTestResults(t *testing.T, codeRes, bodyRes bool) {
-	if codeRes {
-		t.Log("\n \033[32mCode Response has PASSED!!!\033[0m\n")
-	} else {
-		t.Log("\n \033[33mCode Response has FAILED!!!\033[0m\n")
-	}
-
-	if bodyRes {
-		t.Log("\n \033[32mBody Response has PASSED!!!\033[0m\n")
-	} else {
-		t.Log("\n \033[33mBody Response has FAILED!!!\033[0m\n")
-	}
-}
-
-func assertResponseStatusCode(t *testing.T, rr *httptest.ResponseRecorder, expectedStatus int) bool {
-	t.Helper()
-	if status := rr.Code; status != expectedStatus {
-		t.Errorf("\n\033[35mExpected status code\033[0m %v \033[35mbut got:\033[0m %v \n", expectedStatus, status)
-		return false
-	}
-	return true
-}
-
-func assertResponseBody(t *testing.T, rr *httptest.ResponseRecorder, expectedResponse string) bool {
-	t.Helper()
-	if rr.Body.String() != expectedResponse {
-		t.Errorf("\n\033[35m>>>Expected response body:\033[0m\n %v \n\033[35m>>> BUT GOT:\033[0m\n %v \n", expectedResponse, rr.Body.String())
-		return false
-	}
-	return true
-}
-
-// -----------------------TEST FUNCTIONS -------------------------------------------
+// -----------------------TEST FUNCTIONS FOR V1-------------------------------------------
 func TestRegisterHandler_Standard(t *testing.T) {
 
 	cleanup := setupTestEnvironment(t)
@@ -122,7 +36,7 @@ func TestRegisterHandler_Standard(t *testing.T) {
 	expectedResponse := `{"user":{"first_name":"Joe","last_name":"Doe","email":"exemple@example.com"},"message":"User registered!"}`
 	bodyRes := assertResponseBody(t, rr, expectedResponse)
 
-	t.Log("\n\nTEST 1 - Standard User Registration !!!\n")
+	t.Log(utils.OrangeColor.InitColor + "\n\nTEST 1 - Standard User Registration !!!\n" + utils.EndColor)
 	printTestResults(t, codeRes, bodyRes)
 }
 
@@ -153,6 +67,204 @@ func TestRegisterHandler_DuplicateUser(t *testing.T) {
 
 	bodyRes := assertResponseBody(t, rr, expectedResponse)
 
-	t.Log("\n\nTEST 2 - Duplicate User Registration !!!\n")
+	t.Log(utils.OrangeColor.InitColor + "\n\nTEST 2 - Duplicate User Registration !!!\n" + utils.EndColor)
 	printTestResults(t, codeRes, bodyRes)
+}
+
+// TEST FIRST NAME
+func TestRegisterHandlerWithInvalidFirstName(t *testing.T) {
+	invalidFirstNames := []string{
+		"",
+		"select",
+		"Joe*",
+		"J",
+		"JoeDoeJoeDoeJoeDoeJoeDoeJoeDoe",
+	}
+
+	cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	for i, firstName := range invalidFirstNames {
+		t.Run(fmt.Sprintf("InvalidFirstNameCase_%d", i+1), func(t *testing.T) {
+			// Generate a RequestBody with FirstName set to the test value
+			requestBody := GenerateRequestBodyWithFirstName(firstName)
+
+			req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
+
+			// Create a ResponseRecorder to capture the handler's response
+			rr := httptest.NewRecorder()
+
+			// CALL TESTED FUNCTION !!!
+			RegisterHandler(rr, req)
+
+			// Verify the responses...
+			codeRes := assertResponseStatusCode(t, rr, http.StatusBadRequest)
+
+			expectedResponse := `{"error":"Bad Request: {1 : First name must have 2 to 25 characters - and valid characters-words}"}`
+			bodyRes := assertResponseBody(t, rr, expectedResponse)
+
+			t.Logf(utils.OrangeColor.InitColor+"\n\nTEST INVALID FIRST NAME %d - User Registration with invalid first name format: %s !!!\n"+utils.EndColor, i+1, firstName)
+			printTestResults(t, codeRes, bodyRes)
+		})
+	}
+}
+
+// TEST LAST NAME
+func TestRegisterHandlerWithInvalidLastName(t *testing.T) {
+	invalidLastNames := []string{
+		"",
+		"select",
+		"Doe*",
+		"Doeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+	}
+
+	cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	for i, lastName := range invalidLastNames {
+		t.Run(fmt.Sprintf("InvalidLastNameCase_%d", i+1), func(t *testing.T) {
+			// Generate a RequestBody with LastName set to the test value
+			requestBody := GenerateRequestBodyWithLastName(lastName)
+
+			req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
+
+			// Create a ResponseRecorder to capture the handler's response
+			rr := httptest.NewRecorder()
+
+			// CALL TESTED FUNCTION !!!
+			RegisterHandler(rr, req)
+
+			// Verify the responses...
+			codeRes := assertResponseStatusCode(t, rr, http.StatusBadRequest)
+
+			expectedResponse := `{"error":"Bad Request: {1 : Last name must have 1 to 40 characters - and valid characters-words}"}`
+			bodyRes := assertResponseBody(t, rr, expectedResponse)
+
+			t.Logf(utils.OrangeColor.InitColor+"\n\nTEST INVALID LAST NAME %d - User Registration with invalid last name format: %s !!!\n"+utils.EndColor, i+1, lastName)
+			printTestResults(t, codeRes, bodyRes)
+		})
+	}
+}
+
+// TEST EMAIL
+
+func TestRegisterHandlerWithValidSpecialCharInMail(t *testing.T) {
+	cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	// Generate a RequestBody with FirstName set to an empty string (null)
+	requestBody := GenerateRequestBodyWithEmial("joe_doe@example.com")
+
+	req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
+	}
+
+	// Create a ResponseRecorder to capture the handler's response
+	rr := httptest.NewRecorder()
+
+	// CALL TESTED FUNCTION !!!
+	RegisterHandler(rr, req)
+
+	// Verify the responses...
+	codeRes := assertResponseStatusCode(t, rr, http.StatusCreated)
+
+	expectedResponse := `{"user":{"first_name":"Joe","last_name":"Doe","email":"joe_doe@example.com"},"message":"User registered!"}`
+	bodyRes := assertResponseBody(t, rr, expectedResponse)
+
+	t.Log(utils.OrangeColor.InitColor + "\n\nTEST VALID EMAIL 1 - User Registration with valid special character in emaill !!!\n" + utils.EndColor)
+	printTestResults(t, codeRes, bodyRes)
+}
+
+func TestRegisterHandlerWithInvalidEmail(t *testing.T) {
+	invalidEmails := []string{
+		"",
+		"joedoeexemple.com",
+		"joedoe@exemplecom",
+		"joedoe@example.c",
+		"joedoe!@example.com",
+		"joedoe@example!.com",
+		"joe doe@example.com",
+		"joedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoe@exemple.com",
+	}
+
+	cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	for i, email := range invalidEmails {
+		t.Run(fmt.Sprintf("InvalidEmailCase_%d", i+1), func(t *testing.T) {
+			// Generate a RequestBody with FirstName set to an empty string (null)
+			requestBody := GenerateRequestBodyWithEmial(email)
+
+			req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
+
+			// Create a ResponseRecorder to capture the handler's response
+			rr := httptest.NewRecorder()
+
+			// CALL TESTED FUNCTION !!!
+			RegisterHandler(rr, req)
+
+			// Verify the responses...
+			codeRes := assertResponseStatusCode(t, rr, http.StatusBadRequest)
+
+			expectedResponse := `{"error":"Bad Request: {1 : Invalid email format}"}`
+			bodyRes := assertResponseBody(t, rr, expectedResponse)
+
+			t.Logf(utils.OrangeColor.InitColor+"\n\nTEST INVALID EMAIL %d - User Registration with invalid email format: %s !!!\n"+utils.EndColor, i+1, email)
+			printTestResults(t, codeRes, bodyRes)
+		})
+	}
+}
+
+// TEST PASSWORD
+func TestRegisterHandlerWithInvalidPassword(t *testing.T) {
+	invalidPasswords := []string{
+		"Ab@1",
+		"ThisIsAnExtremelyLongPassword1234567890!@#",
+		"password; DROP TABLE users;--",
+		"ThisPassContainsSpaces ",
+		" MyPassHasLeadingSpaces",
+		"MyPassHasInvalidSymbols\000\001",
+		"MyPassHasInvalidSymbols\\n\\t\\r",
+		"ThisPassIsTooLongItExceedsTheMaxAllowedLimitOfThirtyCharacters",
+	}
+
+	cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	for i, password := range invalidPasswords {
+		t.Run(fmt.Sprintf("InvalidPasswordCase_%d", i+1), func(t *testing.T) {
+			// Generate a RequestBody with Password set to the test value
+			requestBody := GenerateRequestBodyWithPassWord(password)
+
+			req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
+
+			// Create a ResponseRecorder to capture the handler's response
+			rr := httptest.NewRecorder()
+
+			// CALL TESTED FUNCTION !!!
+			RegisterHandler(rr, req)
+
+			// Verify the responses...
+			codeRes := assertResponseStatusCode(t, rr, http.StatusBadRequest)
+
+			expectedResponse := `{"error":"Bad Request: {1 : Password must have at least 5 characters - and valid characters-words}"}`
+			bodyRes := assertResponseBody(t, rr, expectedResponse)
+
+			t.Logf(utils.OrangeColor.InitColor+"\n\nTEST INVALID PASSWORD %d - User Registration with invalid password format: %s !!!\n"+utils.EndColor, i+1, password)
+			printTestResults(t, codeRes, bodyRes)
+		})
+	}
 }

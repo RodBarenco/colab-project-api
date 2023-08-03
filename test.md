@@ -9,7 +9,18 @@ Esse projeto ainda está no começo e por isso o número de testes unitários pa
 
 Os testes estão localizados na pasta "backend-src/handlers" e escritos usando a biblioteca de testes padrão do Go. Cada função do pacote "handlers" terá uma série de testes separados de modo a isolar suas diferentes funcionalidades e respostas esperadas para cada situação e assim facilitar a identificação de problemas específicos.
 
-Para executar os testes, certifique-se de estar no diretório "backend-src/handlers" do projeto. Em seguida, utilize o comando `go test -v` para iniciar as execuções.
+Para executar os testes, certifique-se de:
+
+1. O arquivo .test.env esteja presente na pasta "backend-src" e contenha as configurações adequadas para conexão com o banco de dados. Esse arquivo é essencial para os testes realizarem as conexões corretamente e garantirem que os dados sejam manipulados adequadamente durante os testes.
+
+2. O programa esteja rodando e com o argumento "2" no início ao ser executado. Isso pode ser feito ao chamar o programa e passar "2" como argumento na linha de comando. Por exemplo:
+
+```bash
+./seu_programa 2
+```
+3. O terminal a ser usado para o teste deve estar no diretório "backend-src/handlers" do projeto.
+
+4.  Utilize o comando `go test -v` para iniciar a execução dos testes.
 
 ```bash
 go test -v
@@ -17,7 +28,7 @@ go test -v
 
 ## Função `RegisterHandler`
 
-A função `RegisterHandler` é a principal função de registro de usuário do pacote "handlers". Até o momento, foram escritos apenas 2 testes para essa função:
+A função `RegisterHandler` é a principal função de registro de usuário do pacote "handlers". Até o momento, foram escritos apenas testes para entradas de `FirstName`, `LastName`, `Email` e `PassWord` dessa função, além dos testes:
 
 1. `TestRegisterHandler_Standard`: Testa o registro de um usuário padrão e verifica se a resposta está correta.
 2. `TestRegisterHandler_DuplicateUser`: Testa o registro de um usuário com email duplicado e verifica se a resposta de erro é retornada corretamente.
@@ -36,9 +47,20 @@ This project is still in its early stages, and as such, the number of unit tests
 
 ## Running the Tests
 
-The tests are located in the "backend-src/handlers" folder and are written using the standard Go testing library. Each function in the "handlers" package will have a series of separate tests to isolate its different functionalities and expected responses for each scenario, making it easier to identify specific issues.
+The tests are located in the "backend-src/handlers" folder and written using the Go standard testing library. Each function in the "handlers" package will have a series of separate tests to isolate its different functionalities and expected responses for each situation, facilitating the identification of specific problems.
 
-To run the tests, make sure you are in the "backend-src/handlers" directory of the project. Then, use the `go test -v` command to start the test execution.
+To run the tests, make sure to:
+
+1. Have the ".test.env" file present in the "backend-src" folder, containing the appropriate configurations for connecting to the database. This file is essential for the tests to establish correct connections and ensure that data is manipulated appropriately during testing.
+
+2. Ensure that the program is running with the argument "2" at the beginning when executed. This can be done by calling the program and passing "2" as an argument in the command line. For example:
+
+```bash
+./your_program 2
+```
+3. The terminal to be used for testing must be in the "backend-src/handlers" directory of the project.
+
+4. Use the command ``go test -v` to start the test execution.
 
 ```bash
 go test -v
@@ -46,7 +68,7 @@ go test -v
 
 ## Function `RegisterHandler`
 
-The `RegisterHandler` function is the main user registration function in the "handlers" package. Currently, only 2 tests have been written for this function:
+The `RegisterHandler` function is the main user registration function in the "handlers" package. So far, tests have been written only for the inputs of `FirstName`, `LastName`, `Email`, and `Password` of this function, in addition to the following tests:
 
 1. `TestRegisterHandler_Standard`: Tests the registration of a standard user and verifies if the response is correct.
 2. `TestRegisterHandler_DuplicateUser`: Tests the registration of a user with a duplicate email and verifies if the error response is returned correctly.
