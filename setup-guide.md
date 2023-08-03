@@ -1,4 +1,5 @@
-If you prefer to read it in [English](#Instructions)
+If you prefer to read it in [English](#instructions-for-setting-up-and-running-the-project)
+
 
 ## Instruções para Montar e Rodar o Projeto
 

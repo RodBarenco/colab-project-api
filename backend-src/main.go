@@ -30,7 +30,6 @@ func main() {
 
 	case "2":
 		connection.StartTestServer()
-
 	default:
 		log.Fatal("Was not possible to start Dev/Test mod!!!")
 	}

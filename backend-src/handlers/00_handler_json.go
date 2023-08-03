@@ -9,6 +9,7 @@ import (
 	"gorm.io/datatypes"
 )
 
+// ERROR RESPONSE
 func RespondWithError(w http.ResponseWriter, code int, msg string) {
 
 	if code < http.StatusBadRequest || code >= http.StatusInternalServerError {
@@ -47,13 +48,14 @@ func RespondWithError(w http.ResponseWriter, code int, msg string) {
 	RespondWithJSON(w, code, errorResponse)
 }
 
+// JSON RESPONSE
 func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 
 	if code < http.StatusOK || code >= http.StatusInternalServerError {
 		code = http.StatusOK
 	}
 
-	data, err := json.Marshal(toGORMJSON(payload))
+	data, err := json.Marshal(convertToJSON(payload))
 	if err != nil {
 		log.Printf("Failed to marshal JSON response %v", payload)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -71,7 +73,8 @@ func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	}
 }
 
-func toGORMJSON(data interface{}) interface{} {
+// convertToJSON converts the given data into JSON format, preparing it for the server's JSON response.
+func convertToJSON(data interface{}) interface{} {
 	switch v := data.(type) {
 	case datatypes.JSON:
 		var result interface{}

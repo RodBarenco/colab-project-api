@@ -46,7 +46,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		validationErrors = append(validationErrors, "Password must have at least 5 characters - and valid characters-words")
 	}
 
-	// Check if the date of birth is valid (not greater than current date)
 	if !utils.IsValidDateOfBirth(body.DateOfBirth) {
 		validationErrors = append(validationErrors, "Invalid date of birth")
 	}
@@ -59,11 +58,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		validationErrors = append(validationErrors, "Biography must have 3 to 500 characters - and valid characters-words")
 	}
 
-	// Perform parallel database validations
+	// Perform parallel database validations - that need to access DB
 	var wg sync.WaitGroup
 	wg.Add(3)
 
-	// Parallel validation for Ccourse
 	go func() {
 		defer wg.Done()
 		if body.Ccourse != "" && body.CurrentlyID == nil {
@@ -81,7 +79,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	// Parallel validation for Lcourse
 	go func() {
 		defer wg.Done()
 		if body.Lcourse != "" && body.LastEducationID == nil {
@@ -99,7 +96,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	// Parallel validation for interests
 	go func() {
 		defer wg.Done()
 		isValidInterests, interestsValidationErr := utils.IsValidInterests(body.Interests, dbAccessor)
@@ -121,10 +117,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			formattedErrors[i] = fmt.Sprintf("%d : %s", i+1, errMsg)
 		}
 
-		// Concatenate the formatted error messages into a single string
 		errorMessage := strings.Join(formattedErrors, " , ")
 
-		// Respond with the error message
 		RespondWithError(w, http.StatusBadRequest, "{"+errorMessage+"}")
 		return
 	}
@@ -151,7 +145,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	db := dbAccessor
 
 	if err != nil {
-		// Handle the error if there's an issue with the database connection
 		RespondWithError(w, http.StatusInternalServerError, "Failed to connect to the database")
 		return
 	}
@@ -170,12 +163,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			FirstName: body.FirstName,
 			LastName:  body.LastName,
 			Email:     body.Email,
-			// Add other fields as needed
 		},
 		Message: "User registered!",
 	}
 
-	// Respond with the SignupRes JSON
 	RespondWithJSON(w, http.StatusCreated, response)
 }
 
@@ -188,13 +179,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate the email format
+	// Validations
 	if !utils.IsValidEmail(body.Email) {
 		RespondWithError(w, http.StatusBadRequest, "Invalid email format")
 		return
 	}
 
-	// Validate the password format
 	if !utils.IsValidPassword(body.Password) {
 		RespondWithError(w, http.StatusBadRequest, "Password must have at least 5 characters - and valid characters-words")
 		return
@@ -222,6 +212,5 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Token:   tokenString,
 	}
 
-	// Respond with a success message
 	RespondWithJSON(w, statusCode, response)
 }

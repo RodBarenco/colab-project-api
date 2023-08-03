@@ -24,7 +24,12 @@ func StartTestServer() {
 		log.Fatal("PORT is not found in the environment")
 	}
 
-	dbAccessInstance, err := db.DBaccess(os.Getenv("DATABASE_URL"))
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("Fail to get DATABASE_URL")
+	}
+
+	dbAccessInstance, err := db.DBaccess(dsn)
 	if err != nil {
 		panic(fmt.Errorf("failed to connect to the database: %w", err))
 	}
