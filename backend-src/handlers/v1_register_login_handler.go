@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/RodBarenco/colab-project-api/auth"
 	"github.com/RodBarenco/colab-project-api/res"
@@ -35,7 +36,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !utils.IsValidNickname(body.Nickname) {
-		validationErrors = append(validationErrors, "Nickname must have 2 to 20 characters - and valid characters-words")
+		validationErrors = append(validationErrors, "Nickname must have 2 to 30 characters - and valid characters-words")
 	}
 
 	if !utils.IsValidEmail(body.Email) {
@@ -48,6 +49,14 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	if !utils.IsValidDateOfBirth(body.DateOfBirth) {
 		validationErrors = append(validationErrors, "Invalid date of birth")
+	} else {
+		dob, _ := time.Parse("2006-01-02", body.DateOfBirth)
+
+		now := time.Now()
+
+		if dob.After(now) {
+			validationErrors = append(validationErrors, "Date of birth cannot be in the future")
+		}
 	}
 
 	if !utils.IsValidField(body.Field) {

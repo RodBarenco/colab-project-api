@@ -44,56 +44,35 @@ var StandardRequestBody = []byte(`{
 	"OpenToColab": true
 }`)
 
-// sets the first name in the request body.
-func GenerateRequestBodyWithFirstName(firstName string) []byte {
+// sets the request body.
+func GenerateRequestBodyWithInvalidValue(testType string, invalidValue string) []byte {
 	var body TestRequestBody
 	err := json.Unmarshal(StandardRequestBody, &body)
 	if err != nil {
 		panic("Failed to unmarshal standard request body")
 	}
-	body.FirstName = firstName
-	rb, err := json.Marshal(body)
-	if err != nil {
-		panic("Failed to marshal modified request body")
-	}
-	return rb
-}
 
-func GenerateRequestBodyWithLastName(lastName string) []byte {
-	var body TestRequestBody
-	err := json.Unmarshal(StandardRequestBody, &body)
-	if err != nil {
-		panic("Failed to unmarshal standard request body")
+	switch testType {
+	case "FirstName":
+		body.FirstName = invalidValue
+	case "LastName":
+		body.LastName = invalidValue
+	case "Email":
+		body.Email = invalidValue
+	case "Password":
+		body.Password = invalidValue
+	case "DateOfBirth":
+		body.DateOfBirth = invalidValue
+	case "Nickname":
+		body.Nickname = invalidValue
+	case "Field":
+		body.Field = invalidValue
+	case "Biography":
+		body.Biography = invalidValue
+	default:
+		panic("Invalid testType")
 	}
-	body.LastName = lastName
-	rb, err := json.Marshal(body)
-	if err != nil {
-		panic("Failed to marshal modified request body")
-	}
-	return rb
-}
 
-func GenerateRequestBodyWithEmial(email string) []byte {
-	var body TestRequestBody
-	err := json.Unmarshal(StandardRequestBody, &body)
-	if err != nil {
-		panic("Failed to unmarshal standard request body")
-	}
-	body.Email = email
-	rb, err := json.Marshal(body)
-	if err != nil {
-		panic("Failed to marshal modified request body")
-	}
-	return rb
-}
-
-func GenerateRequestBodyWithPassWord(password string) []byte {
-	var body TestRequestBody
-	err := json.Unmarshal(StandardRequestBody, &body)
-	if err != nil {
-		panic("Failed to unmarshal standard request body")
-	}
-	body.Password = password
 	rb, err := json.Marshal(body)
 	if err != nil {
 		panic("Failed to marshal modified request body")
@@ -164,14 +143,39 @@ func assertResponseStatusCode(t *testing.T, rr *httptest.ResponseRecorder, expec
 	return true
 }
 
-func assertResponseBody(t *testing.T, rr *httptest.ResponseRecorder, expectedResponse string) bool {
+func assertResponseBody(t *testing.T, rr *httptest.ResponseRecorder, expectedResponses ...string) bool {
 	t.Helper()
 	c := utils.PurpleColor.InitColor
 	e := utils.EndColor
-	if rr.Body.String() != expectedResponse {
-		t.Errorf("\n%s>>>Expected response body:%s\n %v \n%s>>> BUT GOT:%s\n %v \n", c, e, expectedResponse, c, e, rr.Body.String())
 
-		return false
+	for _, expectedResponse := range expectedResponses {
+		if rr.Body.String() == expectedResponse {
+			return true
+		}
+	}
+
+	t.Errorf("\n%s>>>Expected response body:%s\n %v \n%s>>> BUT GOT:%s\n %v \n", c, e, expectedResponses, c, e, rr.Body.String())
+	return false
+}
+
+// RESULTS
+type TestResult struct {
+	TotalTests        int
+	PassedTests       int
+	GeneralTests      int
+	InvalidTestsCases [][]string
+	OtherTestsCases   [][]string
+}
+
+var testResult TestResult
+
+func allSlicesEmpty(slice [][]string) bool {
+	for _, innerSlice := range slice {
+		for _, str := range innerSlice {
+			if str != "" {
+				return false
+			}
+		}
 	}
 	return true
 }

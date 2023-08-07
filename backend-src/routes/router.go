@@ -25,11 +25,11 @@ func MainRouter(secretKey string) http.Handler {
 	router.Mount("/v1", v1Router)
 
 	// Roteador para usuários logados
-	v2Router := UserRoutes()
+	v2Router := UserRoutes(secretKey)
 	router.Mount("/v2", auth.AuthMiddleware("user", secretKey, v2Router))
 
 	// Roteador para adms logados
-	v3Router := AdmRoutes()
+	v3Router := AdmRoutes(secretKey)
 	router.Mount("/v3", auth.AuthMiddleware("admin", secretKey, v3Router))
 
 	return router

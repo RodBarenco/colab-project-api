@@ -28,7 +28,7 @@ go test -v
 
 ## Função `RegisterHandler`
 
-A função `RegisterHandler` é a principal função de registro de usuário do pacote "handlers". Até o momento, foram escritos apenas testes para entradas de `FirstName`, `LastName`, `Email` e `PassWord` dessa função, além dos testes:
+A função `RegisterHandler` é a principal função de registro de usuário do pacote "handlers". Até o momento, foram escritos apenas testes para entradas de `FirstName`, `LastName`, `Email`, `PassWord`, `DateOfBirth`, `Nickname`, `Field`, e `Biography` dessa função, além dos testes:
 
 1. `TestRegisterHandler_Standard`: Testa o registro de um usuário padrão e verifica se a resposta está correta.
 2. `TestRegisterHandler_DuplicateUser`: Testa o registro de um usuário com email duplicado e verifica se a resposta de erro é retornada corretamente.
@@ -68,7 +68,7 @@ go test -v
 
 ## Function `RegisterHandler`
 
-The `RegisterHandler` function is the main user registration function in the "handlers" package. So far, tests have been written only for the inputs of `FirstName`, `LastName`, `Email`, and `Password` of this function, in addition to the following tests:
+The `RegisterHandler` function is the main user registration function in the "handlers" package. So far, tests have been written only for the inputs of `FirstName`, `LastName`, `Email`, `PassWord`, `DateOfBirth`, `Nickname`, `Field`, and `Biography` of this function, in addition to the following tests:
 
 1. `TestRegisterHandler_Standard`: Tests the registration of a standard user and verifies if the response is correct.
 2. `TestRegisterHandler_DuplicateUser`: Tests the registration of a user with a duplicate email and verifies if the error response is returned correctly.

@@ -7,7 +7,7 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func AdmRoutes() http.Handler {
+func AdmRoutes(secretKey string) http.Handler {
 	router := chi.NewRouter()
 
 	router.Get("/testreadiness", handlers.HandlerReadiness)

@@ -12,7 +12,9 @@ import (
 )
 
 // -----------------------TEST FUNCTIONS FOR V1-------------------------------------------
-func TestRegisterHandler_Standard(t *testing.T) {
+var invalidOtherTests = make([]string, 0)
+
+func TestRegisterHandlerStandard(t *testing.T) {
 
 	cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -36,11 +38,22 @@ func TestRegisterHandler_Standard(t *testing.T) {
 	expectedResponse := `{"user":{"first_name":"Joe","last_name":"Doe","email":"exemple@example.com"},"message":"User registered!"}`
 	bodyRes := assertResponseBody(t, rr, expectedResponse)
 
+	if !bodyRes || !codeRes {
+		invalidOtherTests = append(invalidOtherTests, fmt.Sprintf("Invalid -> TestRegisterHandlerStandard"))
+		testResult.OtherTestsCases = append(testResult.OtherTestsCases, invalidOtherTests)
+	} else {
+		testResult.PassedTests++
+	}
+
 	t.Log(utils.OrangeColor.InitColor + "\n\nTEST 1 - Standard User Registration !!!\n" + utils.EndColor)
 	printTestResults(t, codeRes, bodyRes)
+
+	testResult.TotalTests++
+	testResult.GeneralTests++
+
 }
 
-func TestRegisterHandler_DuplicateUser(t *testing.T) {
+func TestRegisterHandlerDuplicateUser(t *testing.T) {
 
 	cleanup := setupTestEnvironment(t)
 	defer cleanup()
@@ -67,12 +80,67 @@ func TestRegisterHandler_DuplicateUser(t *testing.T) {
 
 	bodyRes := assertResponseBody(t, rr, expectedResponse)
 
+	if !bodyRes || !codeRes {
+		invalidOtherTests = append(invalidOtherTests, fmt.Sprintf("Invalid -> TestRegisterHandlerDuplicateUser"))
+		testResult.OtherTestsCases = append(testResult.OtherTestsCases, invalidOtherTests)
+	} else {
+		testResult.PassedTests++
+	}
+
 	t.Log(utils.OrangeColor.InitColor + "\n\nTEST 2 - Duplicate User Registration !!!\n" + utils.EndColor)
 	printTestResults(t, codeRes, bodyRes)
+
+	testResult.GeneralTests++
+	testResult.TotalTests++
+}
+
+// TEST FOR INVALID FIELDS!!!!!!!!!!
+func runInvalidTests(t *testing.T, testType string, invalidValues []string, expectedResponses ...string) {
+	cleanup := setupTestEnvironment(t)
+	defer cleanup()
+
+	totalTests := len(invalidValues)
+	passedTests := 0
+	invalidTests := make([]string, 0)
+
+	for i, value := range invalidValues {
+		t.Run(fmt.Sprintf("Invalid%sCase_%d", testType, i+1), func(t *testing.T) {
+			// Gerar o RequestBody com o valor inválido a ser testado (primeiro nome, sobrenome, etc.)
+			requestBody := GenerateRequestBodyWithInvalidValue(testType, value)
+
+			req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
+			if err != nil {
+				t.Fatalf("Failed to create request: %v", err)
+			}
+
+			// Criar um ResponseRecorder para capturar a resposta do handler
+			rr := httptest.NewRecorder()
+
+			// CHAMAR A FUNÇÃO TESTADA !!!
+			RegisterHandler(rr, req)
+
+			// Verificar as respostas...
+			codeRes := assertResponseStatusCode(t, rr, http.StatusBadRequest)
+			bodyRes := assertResponseBody(t, rr, expectedResponses...)
+
+			if bodyRes && codeRes {
+				passedTests++
+			} else {
+				invalidTests = append(invalidTests, fmt.Sprintf("Invalid %s format: %s \n", testType, value))
+				t.Errorf("Test failed: Invalid %s format: %s", testType, value)
+			}
+
+			t.Logf(utils.OrangeColor.InitColor+"\n\nTEST INVALID %s %d - User Registration with invalid %s format: %s !!!\n"+utils.EndColor, testType, i+1, testType, value)
+			printTestResults(t, codeRes, bodyRes)
+		})
+	}
+	testResult.TotalTests += totalTests
+	testResult.PassedTests += passedTests
+	testResult.InvalidTestsCases = append(testResult.InvalidTestsCases, invalidTests)
 }
 
 // TEST FIRST NAME
-func TestRegisterHandlerWithInvalidFirstName(t *testing.T) {
+func TestRegisterHandlerForInvalidFirstNames(t *testing.T) {
 	invalidFirstNames := []string{
 		"",
 		"select",
@@ -81,39 +149,15 @@ func TestRegisterHandlerWithInvalidFirstName(t *testing.T) {
 		"JoeDoeJoeDoeJoeDoeJoeDoeJoeDoe",
 	}
 
-	cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	for i, firstName := range invalidFirstNames {
-		t.Run(fmt.Sprintf("InvalidFirstNameCase_%d", i+1), func(t *testing.T) {
-			// Generate a RequestBody with FirstName set to the test value
-			requestBody := GenerateRequestBodyWithFirstName(firstName)
-
-			req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
-			if err != nil {
-				t.Fatalf("Failed to create request: %v", err)
-			}
-
-			// Create a ResponseRecorder to capture the handler's response
-			rr := httptest.NewRecorder()
-
-			// CALL TESTED FUNCTION !!!
-			RegisterHandler(rr, req)
-
-			// Verify the responses...
-			codeRes := assertResponseStatusCode(t, rr, http.StatusBadRequest)
-
-			expectedResponse := `{"error":"Bad Request: {1 : First name must have 2 to 25 characters - and valid characters-words}"}`
-			bodyRes := assertResponseBody(t, rr, expectedResponse)
-
-			t.Logf(utils.OrangeColor.InitColor+"\n\nTEST INVALID FIRST NAME %d - User Registration with invalid first name format: %s !!!\n"+utils.EndColor, i+1, firstName)
-			printTestResults(t, codeRes, bodyRes)
-		})
+	expectedResponses := []string{
+		`{"error":"Bad Request: {1 : First name must have 2 to 25 characters - and valid characters-words}"}`,
+		// Outras respostas esperadas para o bodyRes, se houver...
 	}
+	runInvalidTests(t, "FirstName", invalidFirstNames, expectedResponses...)
 }
 
 // TEST LAST NAME
-func TestRegisterHandlerWithInvalidLastName(t *testing.T) {
+func TestRegisterHandlerForInvalidLastName(t *testing.T) {
 	invalidLastNames := []string{
 		"",
 		"select",
@@ -121,68 +165,15 @@ func TestRegisterHandlerWithInvalidLastName(t *testing.T) {
 		"Doeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
 	}
 
-	cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	for i, lastName := range invalidLastNames {
-		t.Run(fmt.Sprintf("InvalidLastNameCase_%d", i+1), func(t *testing.T) {
-			// Generate a RequestBody with LastName set to the test value
-			requestBody := GenerateRequestBodyWithLastName(lastName)
-
-			req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
-			if err != nil {
-				t.Fatalf("Failed to create request: %v", err)
-			}
-
-			// Create a ResponseRecorder to capture the handler's response
-			rr := httptest.NewRecorder()
-
-			// CALL TESTED FUNCTION !!!
-			RegisterHandler(rr, req)
-
-			// Verify the responses...
-			codeRes := assertResponseStatusCode(t, rr, http.StatusBadRequest)
-
-			expectedResponse := `{"error":"Bad Request: {1 : Last name must have 1 to 40 characters - and valid characters-words}"}`
-			bodyRes := assertResponseBody(t, rr, expectedResponse)
-
-			t.Logf(utils.OrangeColor.InitColor+"\n\nTEST INVALID LAST NAME %d - User Registration with invalid last name format: %s !!!\n"+utils.EndColor, i+1, lastName)
-			printTestResults(t, codeRes, bodyRes)
-		})
+	expectedResponses := []string{
+		`{"error":"Bad Request: {1 : Last name must have 1 to 40 characters - and valid characters-words}"}`,
+		// Outras respostas esperadas para o bodyRes, se houver...
 	}
+	runInvalidTests(t, "LastName", invalidLastNames, expectedResponses...)
 }
 
 // TEST EMAIL
-
-func TestRegisterHandlerWithValidSpecialCharInMail(t *testing.T) {
-	cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	// Generate a RequestBody with FirstName set to an empty string (null)
-	requestBody := GenerateRequestBodyWithEmial("joe_doe@example.com")
-
-	req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
-	if err != nil {
-		t.Fatalf("Failed to create request: %v", err)
-	}
-
-	// Create a ResponseRecorder to capture the handler's response
-	rr := httptest.NewRecorder()
-
-	// CALL TESTED FUNCTION !!!
-	RegisterHandler(rr, req)
-
-	// Verify the responses...
-	codeRes := assertResponseStatusCode(t, rr, http.StatusCreated)
-
-	expectedResponse := `{"user":{"first_name":"Joe","last_name":"Doe","email":"joe_doe@example.com"},"message":"User registered!"}`
-	bodyRes := assertResponseBody(t, rr, expectedResponse)
-
-	t.Log(utils.OrangeColor.InitColor + "\n\nTEST VALID EMAIL 1 - User Registration with valid special character in emaill !!!\n" + utils.EndColor)
-	printTestResults(t, codeRes, bodyRes)
-}
-
-func TestRegisterHandlerWithInvalidEmail(t *testing.T) {
+func TestRegisterHandlerForInvalidEmail(t *testing.T) {
 	invalidEmails := []string{
 		"",
 		"joedoeexemple.com",
@@ -194,40 +185,17 @@ func TestRegisterHandlerWithInvalidEmail(t *testing.T) {
 		"joedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoejoedoe@exemple.com",
 	}
 
-	cleanup := setupTestEnvironment(t)
-	defer cleanup()
-
-	for i, email := range invalidEmails {
-		t.Run(fmt.Sprintf("InvalidEmailCase_%d", i+1), func(t *testing.T) {
-			// Generate a RequestBody with FirstName set to an empty string (null)
-			requestBody := GenerateRequestBodyWithEmial(email)
-
-			req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
-			if err != nil {
-				t.Fatalf("Failed to create request: %v", err)
-			}
-
-			// Create a ResponseRecorder to capture the handler's response
-			rr := httptest.NewRecorder()
-
-			// CALL TESTED FUNCTION !!!
-			RegisterHandler(rr, req)
-
-			// Verify the responses...
-			codeRes := assertResponseStatusCode(t, rr, http.StatusBadRequest)
-
-			expectedResponse := `{"error":"Bad Request: {1 : Invalid email format}"}`
-			bodyRes := assertResponseBody(t, rr, expectedResponse)
-
-			t.Logf(utils.OrangeColor.InitColor+"\n\nTEST INVALID EMAIL %d - User Registration with invalid email format: %s !!!\n"+utils.EndColor, i+1, email)
-			printTestResults(t, codeRes, bodyRes)
-		})
+	expectedResponses := []string{
+		`{"error":"Bad Request: {1 : Invalid email format}"}`,
+		// Outras respostas esperadas para o bodyRes, se houver...
 	}
+	runInvalidTests(t, "Email", invalidEmails, expectedResponses...)
 }
 
 // TEST PASSWORD
-func TestRegisterHandlerWithInvalidPassword(t *testing.T) {
+func TestRegisterHandlerForInvalidPassword(t *testing.T) {
 	invalidPasswords := []string{
+		"",
 		"Ab@1",
 		"ThisIsAnExtremelyLongPassword1234567890!@#",
 		"password; DROP TABLE users;--",
@@ -238,33 +206,116 @@ func TestRegisterHandlerWithInvalidPassword(t *testing.T) {
 		"ThisPassIsTooLongItExceedsTheMaxAllowedLimitOfThirtyCharacters",
 	}
 
-	cleanup := setupTestEnvironment(t)
-	defer cleanup()
+	expectedResponses := []string{
+		`{"error":"Bad Request: {1 : Password must have at least 5 characters - and valid characters-words}"}`,
+	}
+	runInvalidTests(t, "Password", invalidPasswords, expectedResponses...)
+}
 
-	for i, password := range invalidPasswords {
-		t.Run(fmt.Sprintf("InvalidPasswordCase_%d", i+1), func(t *testing.T) {
-			// Generate a RequestBody with Password set to the test value
-			requestBody := GenerateRequestBodyWithPassWord(password)
+// TEST DATE OF BIRTH
+func TestRegisterHandlerForInvalidDateOfBirth(t *testing.T) {
+	invalidDateOfBirths := []string{
+		"",
+		"01/01/1990",
+		"1990-01",
+		"1990-01-01 12:34:56",
+		"1990/01/01",
+		"1990-13-01",
+		"2050-01-01",
+		"-1990-01-01",
+		"1990-00-01",
+		"1990-01-00",
+		"1990-01-32",
+	}
 
-			req, err := http.NewRequest("POST", "localhost:8080/v1/register", bytes.NewBuffer(requestBody))
-			if err != nil {
-				t.Fatalf("Failed to create request: %v", err)
+	expectedResponses := []string{
+		`{"error":"Bad Request: {1 : Invalid date of birth}"}`,
+		`{"error":"Bad Request: {1 : Date of birth cannot be in the future}"}`,
+		`{"error":"Bad Request: Error during signup: invalid date of birth format. It must be in the format YYYY-MM-DD"}`,
+		// Outras respostas esperadas para o bodyRes, se houver...
+	}
+	runInvalidTests(t, "DateOfBirth", invalidDateOfBirths, expectedResponses...)
+}
+
+// TEST FOR NICKNAME
+func TestRegisterHandlerForInvalidNiNickNames(t *testing.T) {
+	invalidNickNames := []string{
+		"select",
+		"Doe*",
+		"J",
+		"JoeDoeJoeDoeJoeDoeJoeDoeJoeDoeDoeDoeDoeDoeDoeDoe",
+		"J\n",
+	}
+
+	expectedResponses := []string{
+		`{"error":"Bad Request: {1 : Nickname must have 2 to 30 characters - and valid characters-words}"}`,
+		// Outras respostas esperadas para o bodyRes, se houver...
+	}
+	runInvalidTests(t, "Nickname", invalidNickNames, expectedResponses...)
+}
+
+// TEST FIELD
+func TestRegisterHandlerForInvalidField(t *testing.T) {
+	invalidFields := []string{
+		"",
+		" ",
+		"Software Engineering\n",
+		"Software Engineering Software Engineering Software Engineering Software Engineering Software Engineering Software Engineering Software Engineering Software Engineering Software Engineering Software Engineering Software Engineering Software Engineering",
+	}
+
+	expectedResponses := []string{
+		`{"error":"Bad Request: {1 : Field must have 2 to 50 characters - and valid characters-words}"}`,
+	}
+	runInvalidTests(t, "Field", invalidFields, expectedResponses...)
+}
+
+// TEST BIOGRAPHY
+func TestRegisterHandlerForInvalidBiography(t *testing.T) {
+	invalidBiographies := []string{
+		"",
+		"A select.\n",
+		"A ",
+		"Im a Engineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering SoftwareEngineering Software",
+	}
+
+	expectedResponses := []string{
+		`{"error":"Bad Request: {1 : Biography must have 3 to 500 characters - and valid characters-words}"}`,
+	}
+	runInvalidTests(t, "Biography", invalidBiographies, expectedResponses...)
+}
+
+// PRINT RESULT
+
+func TestPrintTestSummary(t *testing.T) {
+	totalTestsColor := utils.BlueColor.InitColor
+	passedTestsColor := utils.GreenColor.InitColor
+	invalidTestsColor := utils.YellowColor.InitColor
+	generalTestColor := utils.CyanColor.InitColor
+	failColor := utils.RedColor.InitColor
+	resetColor := utils.EndColor
+
+	t.Helper()
+	t.Logf("\n\nTEST SUMMARY:\n")
+	t.Logf("%sTotal Tests: %d%s\n", totalTestsColor, testResult.TotalTests, resetColor)
+	t.Logf("%sPassed Tests: %d%s\n", passedTestsColor, testResult.PassedTests, resetColor)
+	t.Logf("%sGeneral Tests: %d%s\n", generalTestColor, testResult.GeneralTests, resetColor)
+	t.Logf("%sNumber of fields tested for invalid cases: %d%s\n", invalidTestsColor, len(testResult.InvalidTestsCases), resetColor)
+
+	if len(testResult.OtherTestsCases) > 0 && !allSlicesEmpty(testResult.OtherTestsCases) {
+		t.Logf("%s\n\nFaield General Tests:\n%s", failColor, resetColor)
+		for _, testCase := range testResult.OtherTestsCases {
+			if len(testCase) > 0 {
+				t.Logf("- %s%s\n%s", failColor, testCase, resetColor)
 			}
+		}
+	}
 
-			// Create a ResponseRecorder to capture the handler's response
-			rr := httptest.NewRecorder()
-
-			// CALL TESTED FUNCTION !!!
-			RegisterHandler(rr, req)
-
-			// Verify the responses...
-			codeRes := assertResponseStatusCode(t, rr, http.StatusBadRequest)
-
-			expectedResponse := `{"error":"Bad Request: {1 : Password must have at least 5 characters - and valid characters-words}"}`
-			bodyRes := assertResponseBody(t, rr, expectedResponse)
-
-			t.Logf(utils.OrangeColor.InitColor+"\n\nTEST INVALID PASSWORD %d - User Registration with invalid password format: %s !!!\n"+utils.EndColor, i+1, password)
-			printTestResults(t, codeRes, bodyRes)
-		})
+	if len(testResult.InvalidTestsCases) > 0 && !allSlicesEmpty(testResult.InvalidTestsCases) {
+		t.Logf("%s\n\nInvalid Test Cases:\n%s", failColor, resetColor)
+		for _, testCase := range testResult.InvalidTestsCases {
+			if len(testCase) > 0 {
+				t.Logf("- %s%s\n%s", failColor, testCase, resetColor)
+			}
+		}
 	}
 }
