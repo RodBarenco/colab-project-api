@@ -4,8 +4,10 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
@@ -32,6 +34,11 @@ type TestRequestBody struct {
 	OpenToColab bool   `json:"OpenToColab"`
 }
 
+type LoginRequestBody struct {
+	Email    string `json:"Email"`
+	Password string `json:"Password"`
+}
+
 var StandardRequestBody = []byte(`{
 	"FirstName": "Joe",
 	"LastName": "Doe",
@@ -44,14 +51,30 @@ var StandardRequestBody = []byte(`{
 	"OpenToColab": true
 }`)
 
-// sets the request body.
-func GenerateRequestBodyWithInvalidValue(testType string, invalidValue string) []byte {
+var StandardLoginRequestBody = []byte(`{
+	"Email": "exemple@example.com",
+	"Password": "123456"
+}`)
+
+// sets the request body. -------------------------------------------------------------
+
+func GenerateRequestBodyWithInvalidValue(testBody []byte, testType string, invalidValue string) []byte {
 	var body TestRequestBody
-	err := json.Unmarshal(StandardRequestBody, &body)
+	err := json.Unmarshal(testBody, &body)
+
 	if err != nil {
-		panic("Failed to unmarshal standard request body")
+		var body2 LoginRequestBody
+		err2 := json.Unmarshal(testBody, &body2)
+		if err2 != nil {
+			panic("Failed to unmarshal request body")
+		}
+		return generateModifiedLoginRequestBody(body2, testType, invalidValue)
 	}
 
+	return generateModifiedTestRequestBody(body, testType, invalidValue)
+}
+
+func generateModifiedTestRequestBody(body TestRequestBody, testType string, invalidValue string) []byte {
 	switch testType {
 	case "FirstName":
 		body.FirstName = invalidValue
@@ -80,6 +103,45 @@ func GenerateRequestBodyWithInvalidValue(testType string, invalidValue string) [
 	return rb
 }
 
+func generateModifiedLoginRequestBody(body LoginRequestBody, testType string, invalidValue string) []byte {
+	switch testType {
+	case "Email":
+		body.Email = invalidValue
+	case "Password":
+		body.Password = invalidValue
+	default:
+		panic("Invalid testType")
+	}
+
+	rb, err := json.Marshal(body)
+	if err != nil {
+		panic("Failed to marshal modified request body")
+	}
+	return rb
+}
+
+// MAKE REQUEST V1
+
+func makeRequest(v1req string, requestBody []byte) (*http.Request, error) {
+	route := "localhost:8080/v1/"
+	switch v1req {
+	case "register":
+		route += "register"
+	case "login":
+		route += "login"
+	default:
+		return nil, fmt.Errorf("Invalid request")
+	}
+
+	req, err := http.NewRequest("POST", route, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+//-------------------------------------------------------------------------------------
 // ----- GENERAL ------
 
 func setupTestEnvironment(t *testing.T) func() {
@@ -178,4 +240,15 @@ func allSlicesEmpty(slice [][]string) bool {
 		}
 	}
 	return true
+}
+
+func printFailedTestsResults(slice [][]string, t *testing.T) {
+	if len(slice) > 0 && !allSlicesEmpty(slice) {
+		t.Logf("%s\n\nInvalid Test Cases:\n%s", utils.RedColor.InitColor, utils.EndColor)
+		for _, testCase := range slice {
+			if len(testCase) > 0 {
+				t.Logf("- %s%s\n%s", utils.RedColor.InitColor, testCase, utils.EndColor)
+			}
+		}
+	}
 }
