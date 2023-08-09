@@ -210,6 +210,14 @@ func IsValidInterests(interests []*db.Interest, accessor *gorm.DB) (bool, error)
 	return true, nil
 }
 
+// ArticleSearch regex
+
+func ArticleSearchIsValid(search string) bool {
+	// Check if the search parameter matches the required pattern
+	searchRegex := `^[A-Za-z0-9\s]{3,80}$`
+	return regexp.MustCompile(searchRegex).MatchString(search)
+}
+
 // Função auxiliar para verificar se o campo contém alguma palavra-chave proibida
 func containsForbiddenKeyword(field string) bool {
 	lowercaseField := strings.ToLower(field)

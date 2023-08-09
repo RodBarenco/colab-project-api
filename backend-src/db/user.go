@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type User struct {
@@ -25,4 +26,13 @@ type User struct {
 	CurrentlyID     *uuid.UUID `gorm:"null;type:uuid"`
 	OpenToColab     bool
 	CreatedAt       time.Time `gorm:"autoCreateTime"`
+}
+
+func GetUserByID(db *gorm.DB, userID uuid.UUID) (User, error) {
+	var user User
+	err := db.Where("id = ?", userID).First(&user).Error
+	if err != nil {
+		return User{}, err
+	}
+	return user, nil
 }

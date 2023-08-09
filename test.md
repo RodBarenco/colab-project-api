@@ -32,6 +32,11 @@ A função `RegisterHandler` é a principal função de registro de usuário do 
 
 1. `TestRegisterHandler_Standard`: Testa o registro de um usuário padrão e verifica se a resposta está correta.
 2. `TestRegisterHandler_DuplicateUser`: Testa o registro de um usuário com email duplicado e verifica se a resposta de erro é retornada corretamente.
+
+## Função `LoginHandler`
+
+A função `LoginHandler` é responsável pelo processo de login de usuários no pacote "handlers". Foram implementados testes para previnir as entradas de dados inválidos nos campos de `Email` e `PassWord`, bem como um teste padrão de login.
+
 ---
 Este é apenas o início dos testes unitários para o pacote "handlers". Mais testes serão adicionados no futuro para abranger diferentes cenários e garantir a robustez e confiabilidade do código.
 
@@ -72,6 +77,11 @@ The `RegisterHandler` function is the main user registration function in the "ha
 
 1. `TestRegisterHandler_Standard`: Tests the registration of a standard user and verifies if the response is correct.
 2. `TestRegisterHandler_DuplicateUser`: Tests the registration of a user with a duplicate email and verifies if the error response is returned correctly.
+
+## Função `LoginHandler`
+
+The `LoginHandler` function is responsible for the user login process in the "handlers" package. Tests have been implemented to prevent invalid data inputs in the `Email` and `PassWord` fields, along with a standard login test. These test implementations ensure the security and accuracy of the authentication process, guarding against potential vulnerabilities and enhancing the overall user experience.
+
 ---
 This is just the beginning of the unit tests for the "handlers" package. More tests will be added in the future to cover different scenarios and ensure the code's robustness and reliability.
 

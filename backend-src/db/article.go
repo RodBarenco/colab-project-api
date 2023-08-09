@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Article struct {
@@ -22,4 +23,70 @@ type Article struct {
 	Shares         int
 	CoAuthors      string
 	CoverImage     string
+}
+
+type ArticleSearchParams struct {
+	Search []string `json:"search"`
+}
+
+func GetLatestThousandArticles(db *gorm.DB) ([]Article, error) {
+	var articles []Article
+	err := db.Order("submission_date desc").Limit(1000).Find(&articles).Error
+	return articles, err
+}
+
+// Obter os 50 artigos mais recentes
+func GetLatestFiftyArticles(db *gorm.DB) ([]Article, error) {
+	var articles []Article
+	err := db.Order("submission_date desc").Limit(50).Find(&articles).Error
+	return articles, err
+}
+
+// Obter artigos filtrados por título
+func GetArticlesByTitle(db *gorm.DB, title string) ([]Article, error) {
+	var articles []Article
+	err := db.Where("title = ?", title).Find(&articles).Error
+	return articles, err
+}
+
+// Obter artigos filtrados por tema
+func GetArticlesBySubject(db *gorm.DB, subject string) ([]Article, error) {
+	var articles []Article
+	err := db.Where("subject = ?", subject).Find(&articles).Error
+	return articles, err
+}
+
+// Obter artigos filtrados por autor
+func GetArticlesByAuthor(db *gorm.DB, authorID uuid.UUID) ([]Article, error) {
+	var articles []Article
+	err := db.Where("author_id = ?", authorID).Find(&articles).Error
+	return articles, err
+}
+
+// Obter artigos filtrados por campo
+func GetArticlesByField(db *gorm.DB, field string) ([]Article, error) {
+	var articles []Article
+	err := db.Where("field = ?", field).Find(&articles).Error
+	return articles, err
+}
+
+// Obter artigos filtrados por palavras-chave
+func GetArticlesByKeywords(db *gorm.DB, keywords ...string) ([]Article, error) {
+	var articles []Article
+	for _, keyword := range keywords {
+		var filteredArticles []Article
+		err := db.Where("keywords LIKE ?", "%"+keyword+"%").Find(&filteredArticles).Error
+		if err != nil {
+			return nil, err
+		}
+		articles = append(articles, filteredArticles...)
+	}
+	return articles, nil
+}
+
+// Obter o artigo por ID
+func GetLatestArticleById(db *gorm.DB, articleID uuid.UUID) (Article, error) {
+	var article Article
+	err := db.Where("id = ?", articleID).Order("submission_date desc").First(&article).Error
+	return article, err
 }

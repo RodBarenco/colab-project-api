@@ -17,8 +17,7 @@ func GeneralRoutes() http.Handler {
 	// articles
 	router.Get("/articles", handlers.GetLatesThousandtArticlesHandler)
 	router.Get("/articles/home", handlers.GetLatestFiftyArticlesHandler)
-	router.Get("/articles/Name/{name}", handlers.GetArticlesByNameHandler)
-	router.Get("/articles/title/{title}", handlers.GetArticlesByTitletHandler)
+	router.Get("/articles/title/{title}", handlers.GetArticlesByTitleHandler)
 	router.Get("/articles/subject/{subject}", handlers.GetArticlesBySubjectHandler)
 	router.Get("/articles/author/{author}", handlers.GetArticlesByAuthorHandler)
 	router.Get("/articles/field/{field}", handlers.GetArticlesByFieldHandler)
