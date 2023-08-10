@@ -52,15 +52,16 @@ func GetArticlesResponseHandler(w http.ResponseWriter, r *http.Request, articleG
 
 	articles, err := articleGetter(dbAccess)
 	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, "Erro ao obter os artigos")
+		RespondWithError(w, http.StatusInternalServerError, "Error fetching articles")
 		return
 	}
 
 	var articleResponses []res.ArticleResponse
+
 	for _, article := range articles {
 		user, err := db.GetUserByID(dbAccess, article.AuthorID)
 		if err != nil {
-			RespondWithError(w, http.StatusInternalServerError, "Erro ao obter nome do autor")
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching author name")
 			return
 		}
 		var author = (user.FirstName + " " + user.LastName)
@@ -78,16 +79,28 @@ func GetArticlesResponseHandler(w http.ResponseWriter, r *http.Request, articleG
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		}
-		articleResponses = append(articleResponses, response)
+
+		// Only append if the article is accepted
+		if article.IsAccepted {
+			articleResponses = append(articleResponses, response)
+		}
 	}
 
+	// If no accepted articles were found, return a friendly response
+	if len(articleResponses) == 0 {
+		message := "No accepted articles found."
+		RespondWithJSON(w, http.StatusOK, message)
+		return
+	}
+
+	// Respond with the list of accepted articles
 	RespondWithJSON(w, http.StatusOK, articleResponses)
 }
 
 func SearchArticlesHandler(w http.ResponseWriter, r *http.Request, searchParam string, articleGetter func(*gorm.DB, string) ([]db.Article, error)) {
 	dbAccess := dbAccessor
 
-	if searchParam == "" || !utils.ArticleSearchIsValid(searchParam) {
+	if searchParam == "" || !utils.IsValidArticleSearch(searchParam) {
 		RespondWithError(w, http.StatusBadRequest, "Invalid search parameter")
 		return
 	}
@@ -120,7 +133,18 @@ func SearchArticlesHandler(w http.ResponseWriter, r *http.Request, searchParam s
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		}
-		articleResponses = append(articleResponses, response)
+
+		// Only append if the article is accepted
+		if article.IsAccepted {
+			articleResponses = append(articleResponses, response)
+		}
+	}
+
+	// If no accepted articles were found, return a friendly response
+	if len(articleResponses) == 0 {
+		message := "No articles found."
+		RespondWithJSON(w, http.StatusOK, message)
+		return
 	}
 
 	RespondWithJSON(w, http.StatusOK, articleResponses)

@@ -35,11 +35,14 @@ Pessoas de todas as áreas são bem-vindas.
 
 ## Próximo Passo:
 
-Rotas para Administradores - testes para as funções de registro, login, autenticação e autorização
+Já dicionaremos testes para as funções de procura de artigos no Router V1. Isso garantirá que a busca por artigos funcione conforme o esperado e que futuras alterações não afetem seu funcionamento. Testes sólidos são essenciais para manter a qualidade do código e evitar problemas. 
 
-Já implementamos as funções responsáveis pelo registro e login com autenticação, além de adicionar as validações necessárias usando expressões regulares. No próximo passo, continuaremos a aprimorar o projeto Colab.
+Também implementamos funções de registro e login(v1) com autenticação e autorização(v2) de áreas específicas e ações individuais do usuário. Dessa forma, garantiremos que cada usuário tenha acesso apenas às áreas permitidas e possa realizar ações apropriadas, aumentando a segurança e a privacidade.
 
-A primeira tarefa será adicionar testes para as funções de autenticação, garantindo que o sistema funcione conforme o esperado e que qualquer alteração futura não afete seu comportamento. Testes são essenciais para mantermos a integridade do código e evitar regressões.
+Sendo assim nos proximos passos estão:
+- Testes para Funções de Procura de Artigos (Router V1). 
+- Testes para Função de Criação de Artigos.
+- Criação de rotas e funções para administradores.
 
 ## Aviso Legal
 
@@ -83,11 +86,14 @@ People from all fields are welcome to contribute.
 
 ## Next Step
 
-Routes for Administrators - Tests for Registration, Login, Authentication, and Authorization Functions
+We have already added tests for the article search function in Router V1. This will ensure that the search for articles works as expected and that future changes will not affect how it works. Solid testing is essential to maintain code quality and avoid problems.
 
-We have already implemented the functions responsible for registration and login with authentication, as well as added necessary validations using regular expressions. In the next step, we will continue to improve the Colab project.
+We have also implemented registration and login function(v1) with authentication and authorization(v2) of specific areas and individual user actions. In this way, we will ensure that each user has access only to the permitted areas and can take appropriate actions, increasing security and privacy.
 
-The first task will be to add tests for the authentication functions, ensuring that the system works as expected and that any future changes do not affect its behavior. Tests are essential to maintain code integrity and avoid regressions.
+So the next steps are:
+- Tests for Article Search Functions (Router V1).
+- Tests for Article Creation Function.
+- Creation of routes and functions for administrators.
 
 ## Legal Notice
 
@@ -131,11 +137,15 @@ Personas de todas las áreas son bienvenidas.
 
 ## Próximo Paso:
 
-Rutas para Administradores - Pruebas para las Funciones de Registro, Inicio de Sesión, Autenticación y Autorización
+Ya hemos agregado pruebas para la función de búsqueda de artículos en Router V1. Esto asegurará que la búsqueda de artículos funcione según lo esperado y que los cambios futuros no afecten su funcionamiento. Las pruebas sólidas son esenciales para mantener la calidad del código y evitar problemas.
 
-Ya hemos implementado las funciones responsables del registro e inicio de sesión con autenticación, además de agregar validaciones necesarias mediante expresiones regulares. En el próximo paso, continuaremos mejorando el proyecto Colab.
+También hemos implementado la función de registro y inicio de sesión (v1) con autenticación y autorización (v2) de áreas específicas y acciones individuales de los usuarios. De esta manera, aseguraremos que cada usuario solo tenga acceso a las áreas permitidas y pueda realizar acciones apropiadas, aumentando la seguridad y la privacidad.
 
-La primera tarea será agregar pruebas para las funciones de autenticación, asegurándonos de que el sistema funcione como se espera y que cualquier cambio futuro no afecte su comportamiento. Las pruebas son esenciales para mantener la integridad del código y evitar regresiones.
+Por lo tanto, los próximos pasos son:
+
+- Pruebas para las Funciones de Búsqueda de Artículos (Router V1).
+- Pruebas para la Función de Creación de Artículos.
+- Creación de rutas y funciones para administradores.
 
 ## Aviso Legal
 

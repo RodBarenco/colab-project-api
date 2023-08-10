@@ -15,6 +15,7 @@ func UserRoutes(secretKey string) http.Handler {
 	router.Get("/testerror", handlers.HandlerError)
 
 	router.Get("/testreadiness/{userID}", userActionHandler(secretKey, handlers.HandlerReadiness))
+	router.Post("/create-article/{userID}", userActionHandler(secretKey, handlers.CreateArticleHandler))
 
 	return router
 }

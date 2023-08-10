@@ -18,6 +18,8 @@ type validationForCourseAndInstitution struct {
 	ExistsInDB bool
 }
 
+// Register - Login
+
 func IsValidCcourse(ccourse string, currentlyID interface{}, accessor *gorm.DB) validationForCourseAndInstitution {
 	result := validationForCourseAndInstitution{}
 
@@ -210,14 +212,65 @@ func IsValidInterests(interests []*db.Interest, accessor *gorm.DB) (bool, error)
 	return true, nil
 }
 
-// ArticleSearch regex
+// ARTICLES
 
-func ArticleSearchIsValid(search string) bool {
+func IsValidArticleSearch(search string) bool {
 	// Check if the search parameter matches the required pattern
 	searchRegex := `^[A-Za-z0-9\s]{3,80}$`
 	return regexp.MustCompile(searchRegex).MatchString(search)
 }
 
+func IsValidArticleTitle(title string) bool {
+	titleRegex := `^[A-Za-z0-9_\-,. ]{2,100}$`
+	return regexp.MustCompile(titleRegex).MatchString(title)
+}
+
+func IsValidArticleSubject(subject string) bool {
+	subjectRegex := `^[A-Za-z0-9_\-,. ]{2,50}$`
+	return regexp.MustCompile(subjectRegex).MatchString(subject)
+}
+
+func IsValidArticleField(description string) bool {
+	descriptionRegex := `^[A-Za-z0-9_\-,\s.]{3,50}$`
+	return regexp.MustCompile(descriptionRegex).MatchString(description)
+}
+
+func IsValidArticleFile(file []byte) bool {
+	// Maximum file size allowed: 8 megabytes
+	maxFileSize := 8 * 1024 * 1024 // 8 MB in bytes
+
+	if len(file) > maxFileSize {
+		return false
+	}
+	// Check if the file is of type PDF
+	// IT WILL BE CHANGED - but the basic idia is to pre-process to bytes format in the cliet
+	// This example checks if the first 4 bytes match the PDF header.
+	isPDF := len(file) >= 4 && file[0] == 0x25 && file[1] == 0x50 && file[2] == 0x44 && file[3] == 0x46
+
+	return isPDF
+}
+
+func IsValidArticleDescription(description string) bool {
+	descriptionRegex := `^[A-Za-z0-9_\-,\s.]{3,500}$`
+	return regexp.MustCompile(descriptionRegex).MatchString(description)
+}
+
+func IsValidArticleKeywords(keywords string) bool {
+	keywordsRegex := `^[A-Za-z0-9_\-,. ]{2,100}$`
+	return regexp.MustCompile(keywordsRegex).MatchString(keywords)
+}
+
+func IsValidArticleCoAuthors(coAuthors string) bool {
+	coAuthorsRegex := `^[A-Za-z0-9_\-,. ]{2,100}$`
+	return regexp.MustCompile(coAuthorsRegex).MatchString(coAuthors)
+}
+
+func IsValidArticleCoverImage(coverImage string) bool {
+	coverImageRegex := `^[A-Za-z0-9_\-,. ]{2,100}$`
+	return regexp.MustCompile(coverImageRegex).MatchString(coverImage)
+}
+
+// --------------------------------------------------------------- HELPER ----------------------------------
 // Função auxiliar para verificar se o campo contém alguma palavra-chave proibida
 func containsForbiddenKeyword(field string) bool {
 	lowercaseField := strings.ToLower(field)

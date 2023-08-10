@@ -18,6 +18,7 @@ type Article struct {
 	Keywords       string    `gorm:"not null"`
 	SubmissionDate time.Time `gorm:"not null"`
 	AcceptanceDate time.Time
+	IsAccepted     bool
 	LikedBy        []uuid.UUID `gorm:"type:uuid[]"`
 	Citations      []uuid.UUID `gorm:"type:uuid[]"`
 	Shares         int
@@ -27,6 +28,40 @@ type Article struct {
 
 type ArticleSearchParams struct {
 	Search []string `json:"search"`
+}
+
+type ArticleParams struct {
+	Title          string
+	AuthorID       uuid.UUID
+	Subject        string
+	Field          string
+	File           []byte
+	Description    string
+	Keywords       string
+	SubmissionDate time.Time
+	LikedBy        []uuid.UUID
+	Citations      []uuid.UUID
+	Shares         int
+	CoAuthors      string
+	CoverImage     string
+}
+
+func CreateArticle(db *gorm.DB, newArticle ArticleParams) error {
+	newArticle.SubmissionDate = time.Now()
+	article := Article{
+		Title:          newArticle.Title,
+		AuthorID:       newArticle.AuthorID,
+		Subject:        newArticle.Subject,
+		Field:          newArticle.Field,
+		File:           newArticle.File,
+		Description:    newArticle.Description,
+		Keywords:       newArticle.Keywords,
+		SubmissionDate: newArticle.SubmissionDate,
+		CoAuthors:      newArticle.CoAuthors,
+		CoverImage:     newArticle.CoverImage,
+	}
+
+	return db.Create(&article).Error
 }
 
 func GetLatestThousandArticles(db *gorm.DB) ([]Article, error) {
