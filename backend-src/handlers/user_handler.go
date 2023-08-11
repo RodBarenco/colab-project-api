@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/RodBarenco/colab-project-api/db"
 	"github.com/RodBarenco/colab-project-api/res"
 	"github.com/RodBarenco/colab-project-api/utils"
+	"github.com/go-chi/chi"
+	"github.com/google/uuid"
 )
 
 func CreateArticleHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,4 +83,89 @@ func CreateArticleHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RespondWithJSON(w, http.StatusCreated, response)
+}
+
+func GetRecommendedArticlesHandler(w http.ResponseWriter, r *http.Request) {
+	userIDString := chi.URLParam(r, "userID")
+	userID, err := uuid.Parse(userIDString)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid userID")
+		return
+	}
+
+	monthsAgoString := r.URL.Query().Get("monthsAgo")
+	var monthsAgo int
+	if monthsAgoString != "" {
+		monthsAgo, err = strconv.Atoi(monthsAgoString)
+		if err != nil {
+			RespondWithError(w, http.StatusBadRequest, "Invalid monthsAgo")
+			return
+		}
+	}
+
+	dbAccess := dbAccessor
+
+	articles, otherArticles, err := db.GetRecommendedArticles(dbAccess, userID, monthsAgo)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to get recommended articles")
+		return
+	}
+
+	// Create ArticleResponse slices from articles and otherArticles
+	var articleResponses []res.ArticleResponse
+	for _, article := range articles {
+		authorName, err := utils.GetAuthorName(dbAccess, article.AuthorID)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching author name")
+			return
+		}
+
+		articleResponses = append(articleResponses, res.ArticleResponse{
+			ID:             article.ID,
+			Title:          article.Title,
+			AuthorName:     authorName,
+			Subject:        article.Subject,
+			Field:          article.Field,
+			Description:    article.Description,
+			Keywords:       article.Keywords,
+			SubmissionDate: article.SubmissionDate,
+			LikedBy:        article.LikedBy,
+			Shares:         article.Shares,
+			CoverImage:     article.CoverImage,
+		})
+	}
+
+	// Create ArticleResponse slices for otherArticles
+	var otherArticleResponses []res.ArticleResponse
+	for _, article := range otherArticles {
+		authorName, err := utils.GetAuthorName(dbAccess, article.AuthorID)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching author name")
+			return
+		}
+
+		otherArticleResponses = append(otherArticleResponses, res.ArticleResponse{
+			ID:             article.ID,
+			Title:          article.Title,
+			AuthorName:     authorName,
+			Subject:        article.Subject,
+			Field:          article.Field,
+			Description:    article.Description,
+			Keywords:       article.Keywords,
+			SubmissionDate: article.SubmissionDate,
+			LikedBy:        article.LikedBy,
+			Shares:         article.Shares,
+			CoverImage:     article.CoverImage,
+		})
+	}
+
+	response := struct {
+		Articles      []res.ArticleResponse `json:"articles"`
+		OtherArticles []res.ArticleResponse `json:"other_articles"`
+	}{
+		Articles:      articleResponses,
+		OtherArticles: otherArticleResponses,
+	}
+
+	RespondWithJSON(w, http.StatusOK, response)
 }

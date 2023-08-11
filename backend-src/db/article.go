@@ -125,3 +125,87 @@ func GetLatestArticleById(db *gorm.DB, articleID uuid.UUID) (Article, error) {
 	err := db.Where("id = ?", articleID).Order("submission_date desc").First(&article).Error
 	return article, err
 }
+
+// Articles Recomended for a specificc user
+
+func GetRecommendedArticles(db *gorm.DB, userID uuid.UUID, monthsAgo int) ([]Article, []Article, error) {
+	var user User
+	if err := db.Preload("Interests").Where("id = ?", userID).First(&user).Error; err != nil {
+		return nil, nil, err
+	}
+
+	var articles []Article
+	var otherArticles []Article
+
+	var interestNames []string
+	for _, interest := range user.Interests {
+		interestNames = append(interestNames, interest.Name)
+	}
+
+	// Calculate the date 'monthsAgo' months ago from now
+	var cutoffDate time.Time
+	if monthsAgo > 0 {
+		cutoffDate = time.Now().AddDate(0, -monthsAgo, 0)
+	}
+
+	// Select articles with matching interests or matching field, order by likes
+	query := db.
+		Model(&Article{}).
+		Where("is_accepted = ?", true).
+		Where("(field ILIKE ? OR exists(select 1 from interests, user_interests where user_interests.interest_id = interests.id and user_interests.user_id = ? and interests.name ILIKE any(array[?])))", "%"+user.Field+"%", userID, interestNames).
+		Order("array_length(liked_by, 1) DESC").
+		Limit(50)
+
+	if !cutoffDate.IsZero() {
+		query = query.Where("submission_date >= ?", cutoffDate)
+	}
+
+	err := query.Find(&articles).Error
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Create a map to keep track of article IDs
+	articleIDMap := make(map[uuid.UUID]bool)
+
+	// Iterate through the recommended articles and add their IDs to the map
+	for _, article := range articles {
+		articleIDMap[article.ID] = true
+	}
+
+	// If not enough articles found, fetch latest articles to complete the list
+	limit := 50 - len(articles)
+	if limit > 0 {
+		otherQuery := db.
+			Model(&Article{}).
+			Where("is_accepted = ?", true).
+			Order("submission_date DESC").
+			Limit(limit)
+
+		if !cutoffDate.IsZero() {
+			otherQuery = otherQuery.Where("submission_date >= ?", cutoffDate)
+		}
+
+		// Restrict articles to a specific date range
+		if !cutoffDate.IsZero() {
+			otherQuery = otherQuery.Where("submission_date >= ?", cutoffDate)
+		}
+
+		err := otherQuery.Find(&otherArticles).Error
+		if err != nil {
+			return nil, nil, err
+		}
+
+		// Iterate through the other articles and add to otherArticleResponses
+		var filteredOtherArticles []Article
+		for _, article := range otherArticles {
+			// Check if the article ID is already in the map
+			if _, ok := articleIDMap[article.ID]; !ok {
+				filteredOtherArticles = append(filteredOtherArticles, article)
+			}
+		}
+		otherArticles = filteredOtherArticles
+	}
+
+	return articles, otherArticles, nil
+}

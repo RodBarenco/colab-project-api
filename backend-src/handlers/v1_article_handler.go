@@ -59,17 +59,16 @@ func GetArticlesResponseHandler(w http.ResponseWriter, r *http.Request, articleG
 	var articleResponses []res.ArticleResponse
 
 	for _, article := range articles {
-		user, err := db.GetUserByID(dbAccess, article.AuthorID)
+		authorName, err := utils.GetAuthorName(dbAccess, article.AuthorID)
 		if err != nil {
 			RespondWithError(w, http.StatusInternalServerError, "Error fetching author name")
 			return
 		}
-		var author = (user.FirstName + " " + user.LastName)
 
 		response := res.ArticleResponse{
 			ID:             article.ID,
 			Title:          article.Title,
-			AuthorName:     author,
+			AuthorName:     authorName,
 			Subject:        article.Subject,
 			Field:          article.Field,
 			Description:    article.Description,
@@ -113,17 +112,16 @@ func SearchArticlesHandler(w http.ResponseWriter, r *http.Request, searchParam s
 
 	var articleResponses []res.ArticleResponse
 	for _, article := range articles {
-		user, err := db.GetUserByID(dbAccess, article.AuthorID)
+		authorName, err := utils.GetAuthorName(dbAccess, article.AuthorID)
 		if err != nil {
-			RespondWithError(w, http.StatusInternalServerError, "Author not found")
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching author name")
 			return
 		}
-		var author = (user.FirstName + " " + user.LastName)
 
 		response := res.ArticleResponse{
 			ID:             article.ID,
 			Title:          article.Title,
-			AuthorName:     author,
+			AuthorName:     authorName,
 			Subject:        article.Subject,
 			Field:          article.Field,
 			Description:    article.Description,
