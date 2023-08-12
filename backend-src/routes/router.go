@@ -4,9 +4,23 @@ import (
 	"net/http"
 
 	"github.com/RodBarenco/colab-project-api/auth"
+	"github.com/RodBarenco/colab-project-api/utils"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 )
+
+func URLValidationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		if !utils.ValidateURL(path) {
+			http.Error(w, "Invalid URL format", http.StatusBadRequest)
+			return
+		}
+
+		// Se a URL for válida, continue para o próximo handler
+		next.ServeHTTP(w, r)
+	})
+}
 
 func MainRouter(secretKey string) http.Handler {
 	router := chi.NewRouter()
@@ -19,6 +33,8 @@ func MainRouter(secretKey string) http.Handler {
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
+
+	router.Use(URLValidationMiddleware)
 
 	// Roteador para usuários não logados
 	v1Router := GeneralRoutes()

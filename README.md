@@ -26,7 +26,6 @@ O objetivo principal do Projeto Colab é criar uma plataforma amigável e acess�
 - Compartilhamento rápido
 - Comentários e interação entre os usuários (seguir autores, dar like em artigos, se comunicar com autores que estejam abertos para colaboração)
 - Pesquisa e filtragem de conteúdo por assunto, autor e mais
-- ... (Adicione outras funcionalidades planejadas, se houver)
 
 ## Contribuições
 
@@ -77,7 +76,6 @@ The main objective of Project Colab is to create a friendly and accessible platf
 - Quick sharing
 - User interactions and comments (follow authors, like articles, communicate with authors open to collaboration)
 - Search and filtering of content by subject, author, and more
-- ... (Add other planned features, if any)
 
 ## Contributions
 
@@ -128,7 +126,6 @@ El objetivo principal del Proyecto Colab es crear una plataforma amigable y acce
 - Compartir rápidamente
 - Comentarios e interacción entre los usuarios (seguir a autores, dar "me gusta" en artículos, comunicarse con autores que estén abiertos a colaborar)
 - Búsqueda y filtrado de contenido por tema, autor y más
-- ... (Agregue otras funcionalidades planeadas, si las hay)
 
 ## Contribuciones
 

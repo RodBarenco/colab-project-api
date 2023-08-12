@@ -270,6 +270,19 @@ func IsValidArticleCoverImage(coverImage string) bool {
 	return regexp.MustCompile(coverImageRegex).MatchString(coverImage)
 }
 
+// URL -------------------------------------------------------------------
+func ValidateURL(url string) bool {
+	// it will be changed
+	regex := `^.*\/(v1|v2|v3)\/[^*;\\|]*$`
+
+	match, err := regexp.MatchString(regex, url)
+	if err != nil {
+		return false
+	}
+
+	return match
+}
+
 // --------------------------------------------------------------- HELPER ----------------------------------
 // Função auxiliar para verificar se o campo contém alguma palavra-chave proibida
 func containsForbiddenKeyword(field string) bool {

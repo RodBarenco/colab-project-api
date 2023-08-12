@@ -120,9 +120,9 @@ func GetArticlesByKeywords(db *gorm.DB, keywords ...string) ([]Article, error) {
 }
 
 // Obter o artigo por ID
-func GetLatestArticleById(db *gorm.DB, articleID uuid.UUID) (Article, error) {
+func GetArticleById(db *gorm.DB, articleID uuid.UUID) (Article, error) {
 	var article Article
-	err := db.Where("id = ?", articleID).Order("submission_date desc").First(&article).Error
+	err := db.Where("id = ?", articleID).First(&article).Error
 	return article, err
 }
 

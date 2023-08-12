@@ -21,8 +21,8 @@ func GeneralRoutes() http.Handler {
 	router.Get("/articles/subject/{subject}", handlers.GetArticlesBySubjectHandler)
 	router.Get("/articles/author/{author}", handlers.GetArticlesByAuthorHandler)
 	router.Get("/articles/field/{field}", handlers.GetArticlesByFieldHandler)
-	router.Get("/articles/keywords/{field}", handlers.GetArticlesByKeywordsHandler)
-	router.Get("/articles/id", handlers.GetLatesArticleByIdHandler)
+	router.Get("/articles/keywords/{keywords}", handlers.GetArticlesByKeywordsHandler)
+	router.Get("/articles/id/{id}", handlers.GetArticleByIdHandler)
 
 	// art work
 	router.Get("/artworks", handlers.GetLatestArtworksHandler)
@@ -30,8 +30,8 @@ func GeneralRoutes() http.Handler {
 	router.Get("/artworks/subject/{subject}", handlers.GetArtworksBySubjectHandler)
 	router.Get("/artworks/author/{author}", handlers.GetArtworksByAuthorHandler)
 	router.Get("/artworks/field/{field}", handlers.GetArtworksByFieldHandler)
-	router.Get("/artworks/keywords/{field}", handlers.GetArtworksByKeywordsHandler)
-	router.Get("/artworks/id", handlers.GetLatesArtworkByIdHandler)
+	router.Get("/artworks/keywords/{keywords}", handlers.GetArtworksByKeywordsHandler)
+	router.Get("/artworks/id/{id}", handlers.GetLatesArtworkByIdHandler)
 
 	// register-login
 	router.Post("/register", handlers.RegisterHandler)
