@@ -19,8 +19,8 @@ type Article struct {
 	SubmissionDate time.Time `gorm:"not null"`
 	AcceptanceDate time.Time
 	IsAccepted     bool
-	LikedBy        []uuid.UUID `gorm:"type:uuid[]"`
-	Citations      []uuid.UUID `gorm:"type:uuid[]"`
+	LikedBy        []User    `gorm:"many2many:article_likes"`
+	Citations      []Article `gorm:"many2many:article_citations"`
 	Shares         int
 	CoAuthors      string
 	CoverImage     string

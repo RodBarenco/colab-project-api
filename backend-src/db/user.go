@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -35,4 +36,56 @@ func GetUserByID(db *gorm.DB, userID uuid.UUID) (User, error) {
 		return User{}, err
 	}
 	return user, nil
+}
+
+// -------------------------- LIKES ----------------------------//
+
+type LikeArticleRequestParams struct {
+	UserID    uuid.UUID
+	ArticleID uuid.UUID
+}
+
+// Função para adicionar um usuário que "deu like" a um artigo
+func AddUserToLikedBy(db *gorm.DB, articleID uuid.UUID, userID uuid.UUID) error {
+	article := Article{ID: articleID}
+	user := User{ID: userID}
+	return db.Model(&article).Association("LikedBy").Append([]User{user})
+}
+
+// Função para remover um usuário da lista de "likedBy" de um artigo
+func RemoveUserFromLikedBy(db *gorm.DB, articleID uuid.UUID, userID uuid.UUID) error {
+	article := Article{ID: articleID}
+	user := User{ID: userID}
+	return db.Model(&article).Association("LikedBy").Delete([]User{user})
+}
+
+// Função para obter os usuários que "deram like" a um artigo
+func GetLikedByUsers(db *gorm.DB, articleID uuid.UUID) ([]User, error) {
+	var article Article
+	result := db.Preload("LikedBy").Where("id = ?", articleID).First(&article)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return article.LikedBy, nil
+}
+
+func IsArticleLikedByUser(dbAccess *gorm.DB, articleID uuid.UUID, userID uuid.UUID) (bool, error) {
+	var article Article
+	result := dbAccess.Preload("LikedBy").
+		Where("id = ?", articleID).
+		First(&article)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, result.Error
+	}
+
+	for _, likedByUser := range article.LikedBy {
+		if likedByUser.ID == userID {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

@@ -3,19 +3,43 @@ package res
 import (
 	"time"
 
+	"github.com/RodBarenco/colab-project-api/db"
 	"github.com/google/uuid"
 )
 
 type ArticleResponse struct {
-	ID             uuid.UUID   `json:"id"`
-	Title          string      `json:"title"`
-	AuthorName     string      `json:"author_name"`
-	Subject        string      `json:"subject"`
-	Field          string      `json:"field"`
-	Description    string      `json:"description"`
-	Keywords       string      `json:"keywords"`
-	SubmissionDate time.Time   `json:"submission_date"`
-	LikedBy        []uuid.UUID `json:"liked_by"`
-	Shares         int         `json:"shares"`
-	CoverImage     string      `json:"cover_image"`
+	ID             uuid.UUID `json:"id"`
+	Title          string    `json:"title"`
+	AuthorName     string    `json:"author_name"`
+	Subject        string    `json:"subject"`
+	Field          string    `json:"field"`
+	Description    string    `json:"description"`
+	Keywords       string    `json:"keywords"`
+	SubmissionDate time.Time `json:"submission_date"`
+	LikedBy        []string  `json:"liked_by"`
+	Shares         int       `json:"shares"`
+	CoverImage     string    `json:"cover_image"`
+}
+
+// -------------------------------------------------------
+type LikeArticleResponse struct {
+	UserID    uuid.UUID `json:"user_id"`
+	ArticleID uuid.UUID `json:"artcle_id"`
+}
+
+type CreateLikeArticleResponse struct {
+	LikeArticleResponse `json:"article_liked_by"`
+	Message             string `json:"message"`
+}
+
+// ----------------------------------------------------------
+type ArticleWithLikesResponse struct {
+	Article       db.Article `json:"article"`
+	RelatedTables LikesInfo  `json:"relatedTables"`
+	Message       string     `json:"message"`
+}
+
+type LikesInfo struct {
+	NumLikes     int      `json:"numLikes"`
+	LikedByNames []string `json:"likedByNames"`
 }

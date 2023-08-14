@@ -23,3 +23,12 @@ func GetAuthorIDByName(dbAccess *gorm.DB, firstName, lastName string) (uuid.UUID
 	}
 	return user.ID, nil
 }
+
+func GetNamesOfUsersThatLikedArticles(dbAcess *gorm.DB, articleID uuid.UUID) ([]db.User, error) {
+	var article db.Article
+	result := dbAcess.Preload("LikedBy").Where("id = ?", articleID).First(&article)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return article.LikedBy, nil
+}

@@ -120,6 +120,12 @@ func GetRecommendedArticlesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		likedByNames, err := GetLikedByUserNames(dbAccess, article.ID)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching liked by users")
+			return
+		}
+
 		articleResponses = append(articleResponses, res.ArticleResponse{
 			ID:             article.ID,
 			Title:          article.Title,
@@ -129,7 +135,7 @@ func GetRecommendedArticlesHandler(w http.ResponseWriter, r *http.Request) {
 			Description:    article.Description,
 			Keywords:       article.Keywords,
 			SubmissionDate: article.SubmissionDate,
-			LikedBy:        article.LikedBy,
+			LikedBy:        likedByNames,
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		})
@@ -144,6 +150,12 @@ func GetRecommendedArticlesHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		likedByNames, err := GetLikedByUserNames(dbAccess, article.ID)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching liked by users")
+			return
+		}
+
 		otherArticleResponses = append(otherArticleResponses, res.ArticleResponse{
 			ID:             article.ID,
 			Title:          article.Title,
@@ -153,7 +165,7 @@ func GetRecommendedArticlesHandler(w http.ResponseWriter, r *http.Request) {
 			Description:    article.Description,
 			Keywords:       article.Keywords,
 			SubmissionDate: article.SubmissionDate,
-			LikedBy:        article.LikedBy,
+			LikedBy:        likedByNames,
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		})

@@ -70,6 +70,12 @@ func GetArticlesByAuthorHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		likedByNames, err := GetLikedByUserNames(dbAccess, article.ID)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching liked by users")
+			return
+		}
+
 		response := res.ArticleResponse{
 			ID:             article.ID,
 			Title:          article.Title,
@@ -79,7 +85,7 @@ func GetArticlesByAuthorHandler(w http.ResponseWriter, r *http.Request) {
 			Description:    article.Description,
 			Keywords:       article.Keywords,
 			SubmissionDate: article.SubmissionDate,
-			LikedBy:        article.LikedBy,
+			LikedBy:        likedByNames,
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		}
@@ -119,14 +125,18 @@ func GetArticlesByKeywordsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Aqui você pode criar a estrutura de resposta ou retornar os artigos diretamente, dependendo da sua necessidade.
-	// Vou criar uma resposta simplificada aqui.
 	var articleResponses []res.ArticleResponse
 
 	for _, article := range articles {
 		authorName, err := utils.GetAuthorName(dbAccess, article.AuthorID)
 		if err != nil {
 			RespondWithError(w, http.StatusInternalServerError, "Error fetching author name")
+			return
+		}
+
+		likedByNames, err := GetLikedByUserNames(dbAccess, article.ID)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching liked by users")
 			return
 		}
 
@@ -139,7 +149,7 @@ func GetArticlesByKeywordsHandler(w http.ResponseWriter, r *http.Request) {
 			Description:    article.Description,
 			Keywords:       article.Keywords,
 			SubmissionDate: article.SubmissionDate,
-			LikedBy:        article.LikedBy,
+			LikedBy:        likedByNames,
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		}
@@ -177,7 +187,27 @@ func GetArticleByIdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, article)
+	// Obter os nomes das pessoas que curtiram o artigo
+	likedByNames, err := GetLikedByUserNames(dbAccess, articleID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Error fetching liked by user names")
+		return
+	}
+
+	// Obter a quantidade de curtidas
+	numLikes := len(likedByNames)
+
+	// Criar a estrutura de resposta
+	response := res.ArticleWithLikesResponse{
+		Article: article,
+		RelatedTables: res.LikesInfo{
+			NumLikes:     numLikes,
+			LikedByNames: likedByNames,
+		},
+		Message: "Article and related data retrieved successfully",
+	}
+
+	RespondWithJSON(w, http.StatusOK, response)
 }
 
 /// HELPER-------------------------------------------------------------------------------------------------
@@ -200,6 +230,13 @@ func GetArticlesResponseHandler(w http.ResponseWriter, r *http.Request, articleG
 			return
 		}
 
+		// Get the names of users who liked the article
+		likedByNames, err := GetLikedByUserNames(dbAccess, article.ID)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching liked by users")
+			return
+		}
+
 		response := res.ArticleResponse{
 			ID:             article.ID,
 			Title:          article.Title,
@@ -209,7 +246,7 @@ func GetArticlesResponseHandler(w http.ResponseWriter, r *http.Request, articleG
 			Description:    article.Description,
 			Keywords:       article.Keywords,
 			SubmissionDate: article.SubmissionDate,
-			LikedBy:        article.LikedBy,
+			LikedBy:        likedByNames, // Use the names of users who liked the article
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		}
@@ -230,6 +267,8 @@ func GetArticlesResponseHandler(w http.ResponseWriter, r *http.Request, articleG
 	// Respond with the list of accepted articles
 	RespondWithJSON(w, http.StatusOK, articleResponses)
 }
+
+//---------------------------------------------------------------------------
 
 func SearchArticlesHandler(w http.ResponseWriter, r *http.Request, searchParam string, articleGetter func(*gorm.DB, string) ([]db.Article, error)) {
 	dbAccess := dbAccessor
@@ -253,6 +292,13 @@ func SearchArticlesHandler(w http.ResponseWriter, r *http.Request, searchParam s
 			return
 		}
 
+		// Get the names of users who liked the article
+		likedByNames, err := GetLikedByUserNames(dbAccess, article.ID)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching liked by users")
+			return
+		}
+
 		response := res.ArticleResponse{
 			ID:             article.ID,
 			Title:          article.Title,
@@ -262,7 +308,7 @@ func SearchArticlesHandler(w http.ResponseWriter, r *http.Request, searchParam s
 			Description:    article.Description,
 			Keywords:       article.Keywords,
 			SubmissionDate: article.SubmissionDate,
-			LikedBy:        article.LikedBy,
+			LikedBy:        likedByNames, // Use the names of users who liked the article
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		}
@@ -281,4 +327,19 @@ func SearchArticlesHandler(w http.ResponseWriter, r *http.Request, searchParam s
 	}
 
 	RespondWithJSON(w, http.StatusOK, articleResponses)
+}
+
+// Function to get name of users that liked a Article !!!!!!!!!!!!!!!!!!
+func GetLikedByUserNames(db *gorm.DB, articleID uuid.UUID) ([]string, error) {
+	likedByUsers, err := utils.GetNamesOfUsersThatLikedArticles(db, articleID)
+	if err != nil {
+		return nil, err
+	}
+
+	likedByNames := make([]string, len(likedByUsers))
+	for i, user := range likedByUsers {
+		likedByNames[i] = user.FirstName + " " + user.LastName
+	}
+
+	return likedByNames, nil
 }

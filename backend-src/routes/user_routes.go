@@ -13,11 +13,14 @@ func UserRoutes(secretKey string) http.Handler {
 
 	router.Get("/testerror", handlers.HandlerReadiness)
 	router.Get("/testerror", handlers.HandlerError)
-
 	router.Get("/testreadiness/{userID}", userActionHandler(secretKey, handlers.HandlerReadiness))
+
 	router.Get("/home-articles/{userID}", userActionHandler(secretKey, handlers.GetRecommendedArticlesHandler))
+	router.Get("/is-article-liked/{userID}", userActionHandler(secretKey, handlers.IsArticleLikedByUserHandler))
 
 	router.Post("/create-article/{userID}", userActionHandler(secretKey, handlers.CreateArticleHandler))
+	router.Patch("/like-article/{userID}", userActionHandler(secretKey, handlers.AddUserToLikedByHandler))
+	router.Patch("/unlike-article/{userID}", userActionHandler(secretKey, handlers.RemoveUserFromLikedByHandler))
 
 	return router
 }
