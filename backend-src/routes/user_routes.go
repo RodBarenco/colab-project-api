@@ -21,6 +21,8 @@ func UserRoutes(secretKey string) http.Handler {
 	router.Post("/create-article/{userID}", userActionHandler(secretKey, handlers.CreateArticleHandler))
 	router.Patch("/like-article/{userID}", userActionHandler(secretKey, handlers.AddUserToLikedByHandler))
 	router.Patch("/unlike-article/{userID}", userActionHandler(secretKey, handlers.RemoveUserFromLikedByHandler))
+	router.Patch("/add-cited-article/{userID}", userActionHandler(secretKey, handlers.AddCitationHandler))
+	router.Patch("/remove-cited-article/{userID}", userActionHandler(secretKey, handlers.RemoveCitationHandler))
 
 	return router
 }

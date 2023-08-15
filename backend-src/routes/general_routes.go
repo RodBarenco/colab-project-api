@@ -23,6 +23,9 @@ func GeneralRoutes() http.Handler {
 	router.Get("/articles/field/{field}", handlers.GetArticlesByFieldHandler)
 	router.Get("/articles/keywords/{keywords}", handlers.GetArticlesByKeywordsHandler)
 	router.Get("/articles/id/{id}", handlers.GetArticleByIdHandler)
+	router.Get("/articles/likedby/{id}", handlers.GetLikedByUsersHandler)
+	router.Get("/articles/isciting/{id}", handlers.GetCitingArticlesHandler)
+	router.Get("/articles/citedby/{id}", handlers.GetCitedByArticlesHandler)
 
 	// art work
 	router.Get("/artworks", handlers.GetLatestArtworksHandler)

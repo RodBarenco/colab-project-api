@@ -11,3 +11,12 @@ type CreateArticleRes struct {
 	Article ArticleCreatedResponse `json:"article"`
 	Message string                 `json:"message"`
 }
+
+//--------------------------CITING-----------
+
+// ArticleCitationResponse is the standard response structure for citation actions.
+type ArticleCitationResponse struct {
+	CitedArticleID  string `json:"cited_article_id"`
+	CitingArticleID string `json:"citing_article_id"`
+	Message         string `json:"message"`
+}

@@ -43,3 +43,23 @@ type LikesInfo struct {
 	NumLikes     int      `json:"numLikes"`
 	LikedByNames []string `json:"likedByNames"`
 }
+
+// ----------------------------------------------------------
+
+type LikedByUser struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+}
+
+type LikedByUsersResponse struct {
+	LikedByUsers []LikedByUser `json:"liked_by_users"`
+	Message      string        `json:"message"`
+}
+
+// -------------------------------------
+// ArticleCitingCitedRes defines the structure for the response containing article citing/cited information.
+type ArticleCitingCitedRes struct {
+	ID      uuid.UUID `json:"id"`
+	Title   string    `json:"title"`
+	Message string    `json:"message"`
+}

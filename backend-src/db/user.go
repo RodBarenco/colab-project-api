@@ -64,6 +64,9 @@ func GetLikedByUsers(db *gorm.DB, articleID uuid.UUID) ([]User, error) {
 	var article Article
 	result := db.Preload("LikedBy").Where("id = ?", articleID).First(&article)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Article not found")
+		}
 		return nil, result.Error
 	}
 	return article.LikedBy, nil
@@ -88,4 +91,75 @@ func IsArticleLikedByUser(dbAccess *gorm.DB, articleID uuid.UUID, userID uuid.UU
 	}
 
 	return false, nil
+}
+
+//--------------------------CITATIONS-------------------------------------//
+
+type CitingArticleRequestParams struct {
+	CitingArticleID uuid.UUID
+	CitedArticleID  uuid.UUID
+	UserID          uuid.UUID
+}
+
+func AddCitation(db *gorm.DB, citingArticleID, citedArticleID, userID uuid.UUID) error {
+	citingArticle := Article{}
+	citedArticle := Article{}
+
+	// Verificar se o usuário é o autor do artigo que está citando
+	if err := db.First(&citingArticle, "id = ? AND author_id = ?", citingArticleID, userID).Error; err != nil {
+		return errors.New("User is not authorized to add citation to this article - or article doesn't exist")
+	}
+
+	// Verificar se o artigo citado existe
+	if err := db.First(&citedArticle, "id = ?", citedArticleID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("Cited article not found")
+		}
+		return err
+	}
+
+	return db.Model(&citingArticle).Association("Citations").Append([]Article{citedArticle})
+}
+
+func RemoveCitation(db *gorm.DB, citingArticleID, citedArticleID, userID uuid.UUID) error {
+	citingArticle := Article{}
+	citedArticle := Article{}
+
+	// Verificar se o usuário é o autor do artigo que está citando
+	if err := db.First(&citingArticle, "id = ? AND author_id = ?", citingArticleID, userID).Error; err != nil {
+		return errors.New("User is not authorized to remove citation from this article - or article doesn't exist")
+	}
+
+	// Remover a citação do artigo citado
+	if err := db.First(&citedArticle, "id = ?", citedArticleID).Error; err != nil {
+		return errors.New("Cited article not found")
+	}
+
+	return db.Model(&citingArticle).Association("Citations").Delete([]Article{citedArticle})
+}
+
+func GetCitingArticles(db *gorm.DB, articleID uuid.UUID) ([]Article, error) {
+	var article Article
+	result := db.Preload("Citations").Where("id = ?", articleID).First(&article)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("Article not found")
+		}
+		return nil, result.Error
+	}
+	return article.Citations, nil
+}
+
+// if needed
+// ArticleCitedBy retrieves a list of articles that cite the specified article.
+func ArticleCitedBy(db *gorm.DB, articleID uuid.UUID) ([]Article, error) {
+	var citedByArticles []Article
+	result := db.Model(&Article{}).
+		Where("citations.article_id = ?", articleID).
+		Joins("JOIN article_citations as citations ON articles.id = citations.citation_id").
+		Find(&citedByArticles)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return citedByArticles, nil
 }

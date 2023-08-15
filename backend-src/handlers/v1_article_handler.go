@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 
@@ -210,6 +211,110 @@ func GetArticleByIdHandler(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, response)
 }
 
+func GetLikedByUsersHandler(w http.ResponseWriter, r *http.Request) {
+	articleIDParam := chi.URLParam(r, "id")
+	articleID, err := uuid.Parse(articleIDParam)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid article ID")
+		return
+	}
+
+	dbAccess := dbAccessor
+
+	likedByUsers, err := db.GetLikedByUsers(dbAccess, articleID)
+	if err != nil {
+		if err.Error() == "Article not found" {
+			RespondWithJSON(w, http.StatusNotFound, err.Error())
+			return
+		}
+		RespondWithError(w, http.StatusInternalServerError, "Error fetching liked users")
+		return
+	}
+
+	var likedByUsersRes []res.LikedByUser
+
+	for _, user := range likedByUsers {
+		r := res.LikedByUser{
+			ID:       user.ID,
+			Username: user.FirstName + " " + user.LastName,
+		}
+		likedByUsersRes = append(likedByUsersRes, r)
+	}
+
+	response := res.LikedByUsersResponse{
+		LikedByUsers: likedByUsersRes,
+		Message:      "Liked users fetched successfully",
+	}
+
+	RespondWithJSON(w, http.StatusOK, response)
+}
+
+func GetCitingArticlesHandler(w http.ResponseWriter, r *http.Request) {
+	articleIDParam := chi.URLParam(r, "id")
+	articleID, err := uuid.Parse(articleIDParam)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid article ID")
+		return
+	}
+
+	dbAccess := dbAccessor
+
+	citingArticles, err := db.GetCitingArticles(dbAccess, articleID)
+	if err != nil {
+		if errors.Is(err, errors.New("Article not found")) {
+			RespondWithJSON(w, http.StatusNotFound, err.Error())
+		} else {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching citing articles")
+		}
+		return
+	}
+
+	var response []res.ArticleCitingCitedRes
+	for _, article := range citingArticles {
+		r := res.ArticleCitingCitedRes{
+			ID:      article.ID,
+			Title:   article.Title,
+			Message: "Article citing information fetched successfully",
+		}
+		response = append(response, r)
+	}
+
+	RespondWithJSON(w, http.StatusOK, response)
+}
+
+func GetCitedByArticlesHandler(w http.ResponseWriter, r *http.Request) {
+	articleIDParam := chi.URLParam(r, "id")
+	articleID, err := uuid.Parse(articleIDParam)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid article ID")
+		return
+	}
+
+	dbAccess := dbAccessor
+
+	citedByArticles, err := db.ArticleCitedBy(dbAccess, articleID)
+	if err != nil {
+		if errors.Is(err, errors.New("Article not found")) {
+			RespondWithJSON(w, http.StatusNotFound, err.Error())
+		} else {
+			RespondWithError(w, http.StatusInternalServerError, "Error fetching cited-by articles")
+		}
+		return
+	}
+
+	var response []res.ArticleCitingCitedRes
+	for _, article := range citedByArticles {
+		r := res.ArticleCitingCitedRes{
+			ID:      article.ID,
+			Title:   article.Title,
+			Message: "Cited-by article information fetched successfully",
+		}
+		response = append(response, r)
+	}
+
+	RespondWithJSON(w, http.StatusOK, response)
+}
+
 /// HELPER-------------------------------------------------------------------------------------------------
 
 func GetArticlesResponseHandler(w http.ResponseWriter, r *http.Request, articleGetter func(*gorm.DB) ([]db.Article, error)) {
@@ -268,7 +373,7 @@ func GetArticlesResponseHandler(w http.ResponseWriter, r *http.Request, articleG
 	RespondWithJSON(w, http.StatusOK, articleResponses)
 }
 
-//---------------------------------------------------------------------------
+//------------
 
 func SearchArticlesHandler(w http.ResponseWriter, r *http.Request, searchParam string, articleGetter func(*gorm.DB, string) ([]db.Article, error)) {
 	dbAccess := dbAccessor
