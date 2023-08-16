@@ -109,18 +109,18 @@ func GetArticlesByAuthorHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetArticlesByKeywordsHandler(w http.ResponseWriter, r *http.Request) {
-	keywordsQuery := chi.URLParam(r, "keywords") // Obtém o parâmetro da URL (palavras-chave)
+	keywordsQuery := chi.URLParam(r, "keywords")
 
-	keywords := strings.Split(keywordsQuery, ",") // Divide as palavras-chave separadas por vírgula
+	keywords := strings.Split(keywordsQuery, ",")
 
 	if len(keywords) == 0 {
 		RespondWithError(w, http.StatusBadRequest, "No keywords provided")
 		return
 	}
 
-	dbAccess := dbAccessor // Suponho que você já tenha uma variável "dbAccessor" para acessar o banco de dados
+	dbAccess := dbAccessor
 
-	articles, err := db.GetArticlesByKeywords(dbAccess, keywords...) // Chama a função GetArticlesByKeywords
+	articles, err := db.GetArticlesByKeywords(dbAccess, keywords...)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "Error fetching articles")
 		return
@@ -161,14 +161,12 @@ func GetArticlesByKeywordsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// If no accepted articles were found, return a friendly response
 	if len(articleResponses) == 0 {
 		message := "No articles was found."
 		RespondWithJSON(w, http.StatusOK, message)
 		return
 	}
 
-	// Respond with the list of accepted articles
 	RespondWithJSON(w, http.StatusOK, articleResponses)
 }
 
@@ -188,17 +186,14 @@ func GetArticleByIdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Obter os nomes das pessoas que curtiram o artigo
 	likedByNames, err := GetLikedByUserNames(dbAccess, articleID)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "Error fetching liked by user names")
 		return
 	}
 
-	// Obter a quantidade de curtidas
 	numLikes := len(likedByNames)
 
-	// Criar a estrutura de resposta
 	response := res.ArticleWithLikesResponse{
 		Article: article,
 		RelatedTables: res.LikesInfo{
@@ -269,15 +264,15 @@ func GetCitingArticlesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response []res.ArticleCitingCitedRes
+	var response res.ArticleCitingCitedRes
 	for _, article := range citingArticles {
-		r := res.ArticleCitingCitedRes{
-			ID:      article.ID,
-			Title:   article.Title,
-			Message: "Article citing information fetched successfully",
+		r := res.ArticleCitingCited{
+			ID:    article.ID,
+			Title: article.Title,
 		}
-		response = append(response, r)
+		response.Articles = append(response.Articles, r)
 	}
+	response.Message = "Article citing information fetched successfully"
 
 	RespondWithJSON(w, http.StatusOK, response)
 }
@@ -302,14 +297,51 @@ func GetCitedByArticlesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var response []res.ArticleCitingCitedRes
+	var response res.ArticleCitingCitedRes
 	for _, article := range citedByArticles {
-		r := res.ArticleCitingCitedRes{
-			ID:      article.ID,
-			Title:   article.Title,
-			Message: "Cited-by article information fetched successfully",
+		r := res.ArticleCitingCited{
+			ID:    article.ID,
+			Title: article.Title,
 		}
-		response = append(response, r)
+		response.Articles = append(response.Articles, r)
+	}
+	response.Message = "Article cited information fetched successfully"
+
+	RespondWithJSON(w, http.StatusOK, response)
+}
+
+func IncrementArticleSharesHandler(w http.ResponseWriter, r *http.Request) {
+	articleIDParam := chi.URLParam(r, "id")
+	articleID, err := uuid.Parse(articleIDParam)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid article ID")
+		return
+	}
+
+	dbAccess := dbAccessor
+
+	// Increment the article shares
+	err = db.IncrementArticleShares(dbAccess, articleID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Error incrementing article shares")
+		return
+	}
+
+	// Get the updated article shares
+	article, err := db.GetArticleById(dbAccess, articleID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Error fetching updated article")
+		return
+	}
+
+	response := struct {
+		ArticleID uuid.UUID `json:"articleID"`
+		Shares    int       `json:"shares"`
+		Message   string    `json:"message"`
+	}{
+		ArticleID: articleID,
+		Shares:    article.Shares,
+		Message:   "Article shares incremented successfully",
 	}
 
 	RespondWithJSON(w, http.StatusOK, response)
@@ -351,25 +383,22 @@ func GetArticlesResponseHandler(w http.ResponseWriter, r *http.Request, articleG
 			Description:    article.Description,
 			Keywords:       article.Keywords,
 			SubmissionDate: article.SubmissionDate,
-			LikedBy:        likedByNames, // Use the names of users who liked the article
+			LikedBy:        likedByNames,
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		}
 
-		// Only append if the article is accepted
 		if article.IsAccepted {
 			articleResponses = append(articleResponses, response)
 		}
 	}
 
-	// If no accepted articles were found, return a friendly response
 	if len(articleResponses) == 0 {
 		message := "No accepted articles found."
 		RespondWithJSON(w, http.StatusOK, message)
 		return
 	}
 
-	// Respond with the list of accepted articles
 	RespondWithJSON(w, http.StatusOK, articleResponses)
 }
 
@@ -413,18 +442,16 @@ func SearchArticlesHandler(w http.ResponseWriter, r *http.Request, searchParam s
 			Description:    article.Description,
 			Keywords:       article.Keywords,
 			SubmissionDate: article.SubmissionDate,
-			LikedBy:        likedByNames, // Use the names of users who liked the article
+			LikedBy:        likedByNames,
 			Shares:         article.Shares,
 			CoverImage:     article.CoverImage,
 		}
 
-		// Only append if the article is accepted
 		if article.IsAccepted {
 			articleResponses = append(articleResponses, response)
 		}
 	}
 
-	// If no accepted articles were found, return a friendly response
 	if len(articleResponses) == 0 {
 		message := "No articles found."
 		RespondWithJSON(w, http.StatusOK, message)

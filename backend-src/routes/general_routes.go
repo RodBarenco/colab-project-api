@@ -27,6 +27,8 @@ func GeneralRoutes() http.Handler {
 	router.Get("/articles/isciting/{id}", handlers.GetCitingArticlesHandler)
 	router.Get("/articles/citedby/{id}", handlers.GetCitedByArticlesHandler)
 
+	router.Patch("/articles/share/{id}", handlers.IncrementArticleSharesHandler)
+
 	// art work
 	router.Get("/artworks", handlers.GetLatestArtworksHandler)
 	router.Get("/artworks/Name/{name}", handlers.GetArtworksByNameHandler)

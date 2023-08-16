@@ -58,8 +58,12 @@ type LikedByUsersResponse struct {
 
 // -------------------------------------
 // ArticleCitingCitedRes defines the structure for the response containing article citing/cited information.
+type ArticleCitingCited struct {
+	ID    uuid.UUID `json:"id"`
+	Title string    `json:"title"`
+}
+
 type ArticleCitingCitedRes struct {
-	ID      uuid.UUID `json:"id"`
-	Title   string    `json:"title"`
-	Message string    `json:"message"`
+	Articles []ArticleCitingCited `json:"articles"`
+	Message  string               `json:"message"`
 }

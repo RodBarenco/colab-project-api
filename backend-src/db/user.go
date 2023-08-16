@@ -155,11 +155,22 @@ func GetCitingArticles(db *gorm.DB, articleID uuid.UUID) ([]Article, error) {
 func ArticleCitedBy(db *gorm.DB, articleID uuid.UUID) ([]Article, error) {
 	var citedByArticles []Article
 	result := db.Model(&Article{}).
-		Where("citations.article_id = ?", articleID).
-		Joins("JOIN article_citations as citations ON articles.id = citations.citation_id").
+		Where("article_citations.citation_id = ?", articleID).
+		Joins("JOIN article_citations ON articles.id = article_citations.article_id").
 		Find(&citedByArticles)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return citedByArticles, nil
+}
+
+//-------------------SHARES-----------------------------------------//
+
+func IncrementArticleShares(db *gorm.DB, articleID uuid.UUID) error {
+	var article Article
+	result := db.Model(&article).Where("id = ?", articleID).UpdateColumn("shares", gorm.Expr("shares + ?", 1))
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }
