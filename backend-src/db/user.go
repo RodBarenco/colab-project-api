@@ -46,14 +46,14 @@ type LikeArticleRequestParams struct {
 }
 
 // Função para adicionar um usuário que "deu like" a um artigo
-func AddUserToLikedBy(db *gorm.DB, articleID uuid.UUID, userID uuid.UUID) error {
+func AddUserToLikedByFromArticle(db *gorm.DB, articleID uuid.UUID, userID uuid.UUID) error {
 	article := Article{ID: articleID}
 	user := User{ID: userID}
 	return db.Model(&article).Association("LikedBy").Append([]User{user})
 }
 
 // Função para remover um usuário da lista de "likedBy" de um artigo
-func RemoveUserFromLikedBy(db *gorm.DB, articleID uuid.UUID, userID uuid.UUID) error {
+func RemoveUserFromLikedByFromArticle(db *gorm.DB, articleID uuid.UUID, userID uuid.UUID) error {
 	article := Article{ID: articleID}
 	user := User{ID: userID}
 	return db.Model(&article).Association("LikedBy").Delete([]User{user})

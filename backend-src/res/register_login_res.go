@@ -1,5 +1,7 @@
 package res
 
+import "github.com/google/uuid"
+
 // UserGetedResponse contains the sensitive user information.
 type UserGetedResponse struct {
 	FirstName string `json:"first_name"`
@@ -14,6 +16,8 @@ type SignupRes struct {
 }
 
 type LoginRes struct {
-	Message string `json:"message"`
-	Token   string `json:"token"`
+	UserID    uuid.UUID `json:"user_id"`
+	Token     string    `json:"token"`
+	PublicKey string    `json:"public_key"`
+	Message   string    `json:"message"`
 }

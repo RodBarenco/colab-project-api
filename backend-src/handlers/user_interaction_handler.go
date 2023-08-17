@@ -12,7 +12,7 @@ import (
 )
 
 // -------------------------LIKES ------------------------------------//
-func AddUserToLikedByHandler(w http.ResponseWriter, r *http.Request) {
+func AddUserToLikedByFromArticleHandler(w http.ResponseWriter, r *http.Request) {
 	var params db.LikeArticleRequestParams
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
@@ -40,7 +40,7 @@ func AddUserToLikedByHandler(w http.ResponseWriter, r *http.Request) {
 	dbAccess := dbAccessor
 
 	// Chame a função para adicionar o usuário à lista de "likedBy"
-	err = db.AddUserToLikedBy(dbAccess, params.ArticleID, params.UserID)
+	err = db.AddUserToLikedByFromArticle(dbAccess, params.ArticleID, params.UserID)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "Error adding user to likedBy")
 		return
@@ -57,7 +57,7 @@ func AddUserToLikedByHandler(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, response)
 }
 
-func RemoveUserFromLikedByHandler(w http.ResponseWriter, r *http.Request) {
+func RemoveUserFromLikedByFromArticleHandler(w http.ResponseWriter, r *http.Request) {
 	var params db.LikeArticleRequestParams
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
@@ -85,7 +85,7 @@ func RemoveUserFromLikedByHandler(w http.ResponseWriter, r *http.Request) {
 	dbAccess := dbAccessor
 
 	// Chame a função para remover o usuário da lista de "likedBy"
-	err = db.RemoveUserFromLikedBy(dbAccess, params.ArticleID, params.UserID)
+	err = db.RemoveUserFromLikedByFromArticle(dbAccess, params.ArticleID, params.UserID)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "Error removing user from likedBy")
 		return

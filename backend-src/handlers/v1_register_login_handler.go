@@ -203,7 +203,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	db := dbAccessor
 
 	// Call the Login function passing the validated params and the database connection
-	tokenString, statusCode, err := auth.Login(db, body, jwtSecret)
+	resLog, statusCode, err := auth.Login(db, body, jwtSecret)
 	if err != nil {
 		errorMessage := fmt.Sprintf("Error during login: %v", err)
 		RespondWithError(w, statusCode, errorMessage)
@@ -211,15 +211,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set the token in the request context
-	ctx := context.WithValue(r.Context(), "jwtToken", tokenString)
+	ctx := context.WithValue(r.Context(), "jwtToken", resLog.Token)
 
 	// Call the next handler with the updated context.
 	r = r.WithContext(ctx)
 
-	response := res.LoginRes{
-		Message: "Login successful!",
-		Token:   tokenString,
-	}
+	response := resLog
 
 	RespondWithJSON(w, statusCode, response)
 }
