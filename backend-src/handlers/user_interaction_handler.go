@@ -12,7 +12,7 @@ import (
 )
 
 // -------------------------LIKES ------------------------------------//
-func AddUserToLikedByFromArticleHandler(w http.ResponseWriter, r *http.Request) {
+func AddUserToLikedByFromArticleHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
 	var params db.LikeArticleRequestParams
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
@@ -54,10 +54,10 @@ func AddUserToLikedByFromArticleHandler(w http.ResponseWriter, r *http.Request) 
 		Message: "Article was liked",
 	}
 
-	RespondWithJSON(w, http.StatusOK, response)
+	RespondToLoggedInUser(w, r, encryptResponse, response, userID)
 }
 
-func RemoveUserFromLikedByFromArticleHandler(w http.ResponseWriter, r *http.Request) {
+func RemoveUserFromLikedByFromArticleHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
 	var params db.LikeArticleRequestParams
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
@@ -99,12 +99,12 @@ func RemoveUserFromLikedByFromArticleHandler(w http.ResponseWriter, r *http.Requ
 		Message: "Aricle was unliked",
 	}
 
-	RespondWithJSON(w, http.StatusOK, response)
+	RespondToLoggedInUser(w, r, encryptResponse, response, userID)
 }
 
 // just if needed by frontend
 
-func IsArticleLikedByUserHandler(w http.ResponseWriter, r *http.Request) {
+func IsArticleLikedByUserHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
 	var params db.LikeArticleRequestParams
 	err := json.NewDecoder(r.Body).Decode(&params)
 	if err != nil {
@@ -143,12 +143,12 @@ func IsArticleLikedByUserHandler(w http.ResponseWriter, r *http.Request) {
 		IsLiked: isLiked,
 	}
 
-	RespondWithJSON(w, http.StatusOK, response)
+	RespondToLoggedInUser(w, r, encryptResponse, response, userID)
 }
 
 //-------------------------CITING-----------------------------//
 
-func AddCitationHandler(w http.ResponseWriter, r *http.Request) {
+func AddCitationHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
 	var params db.CitingArticleRequestParams
 
 	err := json.NewDecoder(r.Body).Decode(&params)
@@ -195,10 +195,10 @@ func AddCitationHandler(w http.ResponseWriter, r *http.Request) {
 		Message:         "Citation added successfully.",
 	}
 
-	RespondWithJSON(w, http.StatusOK, response)
+	RespondToLoggedInUser(w, r, encryptResponse, response, userID)
 }
 
-func RemoveCitationHandler(w http.ResponseWriter, r *http.Request) {
+func RemoveCitationHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
 	var params db.CitingArticleRequestParams
 
 	err := json.NewDecoder(r.Body).Decode(&params)
@@ -245,5 +245,5 @@ func RemoveCitationHandler(w http.ResponseWriter, r *http.Request) {
 		Message:         "Citation removed successfully.",
 	}
 
-	RespondWithJSON(w, http.StatusOK, response)
+	RespondToLoggedInUser(w, r, encryptResponse, response, userID)
 }

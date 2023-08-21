@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func CreateArticleHandler(w http.ResponseWriter, r *http.Request) {
+func CreateArticleHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
 	var newArticle db.ArticleParams
 	err := json.NewDecoder(r.Body).Decode(&newArticle)
 	if err != nil {
@@ -82,10 +83,10 @@ func CreateArticleHandler(w http.ResponseWriter, r *http.Request) {
 		Message: "Article created successfully!",
 	}
 
-	RespondWithJSON(w, http.StatusCreated, response)
+	RespondToLoggedInUser(w, r, encryptResponse, response, newArticle.AuthorID)
 }
 
-func GetRecommendedArticlesHandler(w http.ResponseWriter, r *http.Request) {
+func GetRecommendedArticlesHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
 	userIDString := chi.URLParam(r, "userID")
 	userID, err := uuid.Parse(userIDString)
 	if err != nil {
@@ -179,5 +180,63 @@ func GetRecommendedArticlesHandler(w http.ResponseWriter, r *http.Request) {
 		OtherArticles: otherArticleResponses,
 	}
 
-	RespondWithJSON(w, http.StatusOK, response)
+	RespondToLoggedInUser(w, r, encryptResponse, response, userID)
+}
+
+func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
+	var requestData db.AddPublicKeyRequest
+	err := json.NewDecoder(r.Body).Decode(&requestData)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	userIDFromURL := chi.URLParam(r, "userID")
+	userID, err := uuid.Parse(userIDFromURL)
+	if userID != requestData.UserID {
+		RespondWithError(w, http.StatusBadRequest, "Mismatched user IDs")
+		return
+	}
+
+	// Verificar formato Base64 da chave pública
+	if _, err := base64.StdEncoding.DecodeString(requestData.PublicKey); err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid public key format")
+		return
+	}
+
+	err = db.AddPublicKeyToUser(dbAccessor, userID, requestData.PublicKey)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Error adding public key")
+		return
+	}
+
+	var message = "message :  Public key added successfully"
+
+	RespondToLoggedInUser(w, r, encryptResponse, message, userID)
+}
+
+//--------------	HELPER ----------------//
+
+func RespondToLoggedInUser(w http.ResponseWriter, r *http.Request, encryptResponse bool, response interface{}, userID uuid.UUID) {
+	// Verificar se a resposta deve ser encriptada
+	if encryptResponse {
+		encryptedHeader := r.Header.Get("Encrypted")
+		if encryptedHeader != "true" {
+			RespondWithError(w, http.StatusInternalServerError, "Request must be encrypted")
+			return
+		}
+
+		// Obter a chave pública do usuário
+		pkey, err := db.GetUserPublicKey(dbAccessor, userID)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, "Error getting user public key")
+			return
+		}
+
+		// Encriptar e enviar a resposta
+		RespondWithEncryptedJSON(w, http.StatusOK, response, pkey)
+	} else {
+		// Enviar a resposta sem encriptação
+		RespondWithJSON(w, http.StatusOK, response)
+	}
 }

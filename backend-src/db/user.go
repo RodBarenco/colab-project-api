@@ -27,6 +27,7 @@ type User struct {
 	CurrentlyID     *uuid.UUID `gorm:"null;type:uuid"`
 	OpenToColab     bool
 	CreatedAt       time.Time `gorm:"autoCreateTime"`
+	PublicKey       string
 }
 
 func GetUserByID(db *gorm.DB, userID uuid.UUID) (User, error) {
@@ -173,4 +174,39 @@ func IncrementArticleShares(db *gorm.DB, articleID uuid.UUID) error {
 		return result.Error
 	}
 	return nil
+}
+
+// --------------------KEY---------------------------//
+
+type AddPublicKeyRequest struct {
+	UserID    uuid.UUID
+	PublicKey string
+}
+
+// AddPublicKeyToUser adiciona uma chave pública ao usuário pelo ID.
+func AddPublicKeyToUser(db *gorm.DB, userID uuid.UUID, publicKey string) error {
+	var user User
+	result := db.First(&user, userID)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// Atualizar a chave pública do usuário
+	user.PublicKey = publicKey
+	result = db.Save(&user)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+// GetUserPublicKey retorna a chave pública do usuário pelo ID.
+func GetUserPublicKey(db *gorm.DB, userID uuid.UUID) (string, error) {
+	var user User
+	result := db.Select("public_key").Where("id = ?", userID).First(&user)
+	if result.Error != nil {
+		return "", result.Error
+	}
+	return user.PublicKey, nil
 }

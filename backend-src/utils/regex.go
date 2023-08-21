@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -266,8 +267,13 @@ func IsValidArticleCoAuthors(coAuthors string) bool {
 }
 
 func IsValidArticleCoverImage(coverImage string) bool {
-	coverImageRegex := `^[A-Za-z0-9_\-,. ]{2,100}$`
-	return regexp.MustCompile(coverImageRegex).MatchString(coverImage)
+	// verify if is it a valid URL string
+	_, err := url.ParseRequestURI(coverImage)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 // URL -------------------------------------------------------------------

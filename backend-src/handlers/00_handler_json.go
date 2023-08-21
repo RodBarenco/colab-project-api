@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/RodBarenco/colab-project-api/rsakeys"
 	"gorm.io/datatypes"
 )
 
@@ -69,6 +70,53 @@ func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 
 	w.WriteHeader(code)
 	if _, err := w.Write(data); err != nil {
+		log.Printf("Failed to write JSON response: %v", err)
+	}
+}
+
+// YOU CAN USE THIS FUNCTION IN CASES THAT YOU NEED TO RESPOND WITH ENCRYPTED DATA
+func RespondWithEncryptedJSON(w http.ResponseWriter, code int, payload interface{}, publicKey string) {
+	if code < http.StatusOK || code >= http.StatusInternalServerError {
+		code = http.StatusOK
+	}
+
+	// Converter o payload para JSON
+	data, err := json.Marshal(convertToJSON(payload))
+	if err != nil {
+		log.Printf("Failed to marshal JSON response %v", payload)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	// Converter o payload para bytes
+	payloadBytes := []byte(data)
+
+	// Encriptar o payload
+	encryptedData, err := rsakeys.EncryptAndEncode(publicKey, payloadBytes)
+	if err != nil {
+		log.Printf("Failed to encrypt payload: %v", err)
+		RespondWithError(w, http.StatusInternalServerError, "Failed to encrypt data")
+		return
+	}
+
+	// Montar a resposta com o formato especificado
+	response := map[string]string{
+		"encrypted_data": encryptedData,
+	}
+
+	responseJSON, err := json.Marshal(response)
+	if err != nil {
+		log.Printf("Failed to marshal encrypted response: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	dataSize := len(responseJSON)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Length", strconv.Itoa(dataSize))
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	w.WriteHeader(code)
+	if _, err := w.Write(responseJSON); err != nil {
 		log.Printf("Failed to write JSON response: %v", err)
 	}
 }
