@@ -9,6 +9,11 @@ require (
 )
 
 require (
+	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	golang.org/x/net v0.9.0 // indirect
+)
+
+require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect

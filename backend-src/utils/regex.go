@@ -1,11 +1,13 @@
 package utils
 
 import (
+	"encoding/base64"
 	"errors"
-	"net/url"
+	"path"
 	"regexp"
 	"strings"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -243,12 +245,9 @@ func IsValidArticleFile(file []byte) bool {
 	if len(file) > maxFileSize {
 		return false
 	}
-	// Check if the file is of type PDF
-	// IT WILL BE CHANGED - but the basic idia is to pre-process to bytes format in the cliet
-	// This example checks if the first 4 bytes match the PDF header.
-	isPDF := len(file) >= 4 && file[0] == 0x25 && file[1] == 0x50 && file[2] == 0x44 && file[3] == 0x46
 
-	return isPDF
+	mime := mimetype.Detect(file)
+	return mime.Is("application/pdf")
 }
 
 func IsValidArticleDescription(description string) bool {
@@ -267,13 +266,35 @@ func IsValidArticleCoAuthors(coAuthors string) bool {
 }
 
 func IsValidArticleCoverImage(coverImage string) bool {
-	// verify if is it a valid URL string
-	_, err := url.ParseRequestURI(coverImage)
-	if err != nil {
+	// Clean and normalize the path
+	cleanPath := path.Clean(coverImage)
+
+	// If the cleaned path is empty, it's not a valid path
+	if cleanPath == "" {
 		return false
 	}
 
 	return true
+}
+
+// IMAGE --------------------------------------------------------------
+
+func IsValidImage(imageBase64 string) bool {
+	// Maximum file size allowed: 8 megabytes
+	maxFileSize := 4 * 1024 * 1024 // 4 MB in bytes
+
+	// Decode the base64 image string to bytes
+	imageBytes, err := base64.StdEncoding.DecodeString(imageBase64)
+	if err != nil {
+		return false
+	}
+
+	if len(imageBytes) > maxFileSize {
+		return false
+	}
+
+	mime := mimetype.Detect(imageBytes)
+	return mime.Is("image/png") || mime.Is("image/jpeg") || mime.Is("image/gif")
 }
 
 // URL -------------------------------------------------------------------

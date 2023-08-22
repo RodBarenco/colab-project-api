@@ -38,6 +38,9 @@ func GeneralRoutes() http.Handler {
 	router.Get("/artworks/keywords/{keywords}", handlers.GetArtworksByKeywordsHandler)
 	router.Get("/artworks/id/{id}", handlers.GetLatesArtworkByIdHandler)
 
+	// image
+	router.Get("/image/{id}", handlers.GetImageBase64ByIDHandler)
+
 	// register-login
 	router.Post("/register", handlers.RegisterHandler)
 	router.Post("/login", handlers.LoginHandler)

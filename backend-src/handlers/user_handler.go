@@ -58,7 +58,13 @@ func CreateArticleHandler(w http.ResponseWriter, r *http.Request, encryptRespons
 		return
 	}
 
-	if newArticle.CoverImage != "" && !utils.IsValidArticleCoverImage(newArticle.CoverImage) {
+	imageURL, err := SaveImageToDBHandler(newArticle.CoverImage)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to save article cover image")
+		return
+	}
+
+	if !utils.IsValidArticleCoverImage(imageURL) {
 		RespondWithError(w, http.StatusBadRequest, "Invalid article cover image")
 		return
 	}
@@ -76,9 +82,10 @@ func CreateArticleHandler(w http.ResponseWriter, r *http.Request, encryptRespons
 
 	response := res.CreateArticleRes{
 		Article: res.ArticleCreatedResponse{
-			Title:   newArticle.Title,
-			Subject: newArticle.Subject,
-			Field:   newArticle.Field,
+			Title:      newArticle.Title,
+			Subject:    newArticle.Subject,
+			Field:      newArticle.Field,
+			CoverImage: imageURL,
 		},
 		Message: "Article created successfully!",
 	}

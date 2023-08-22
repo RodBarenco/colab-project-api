@@ -5,5 +5,5 @@ import (
 )
 
 func Migrate(db *gorm.DB) error {
-	return db.AutoMigrate(&User{}, &Institution{}, &Article{})
+	return db.AutoMigrate(&User{}, &Institution{}, &Article{}, &Image{})
 }

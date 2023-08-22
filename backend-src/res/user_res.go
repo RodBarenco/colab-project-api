@@ -1,9 +1,10 @@
 package res
 
 type ArticleCreatedResponse struct {
-	Title   string `json:"title"`
-	Subject string `json:"subject"`
-	Field   string `json:"field"`
+	Title      string `json:"title"`
+	Subject    string `json:"subject"`
+	Field      string `json:"field"`
+	CoverImage string `json:"conver_image"`
 	// Add other fields as needed
 }
 
