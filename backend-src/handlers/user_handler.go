@@ -12,6 +12,7 @@ import (
 	"github.com/RodBarenco/colab-project-api/utils"
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func CreateArticleHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
@@ -58,13 +59,18 @@ func CreateArticleHandler(w http.ResponseWriter, r *http.Request, encryptRespons
 		return
 	}
 
+	if !utils.IsValidImage(newArticle.CoverImage) {
+		RespondWithError(w, http.StatusBadRequest, "Invalid article cover image format")
+		return
+	}
+
 	imageURL, err := SaveImageToDBHandler(newArticle.CoverImage)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "Failed to save article cover image")
 		return
 	}
 
-	if !utils.IsValidArticleCoverImage(imageURL) {
+	if !utils.IsValidImageLink(imageURL) {
 		RespondWithError(w, http.StatusBadRequest, "Invalid article cover image")
 		return
 	}
@@ -222,6 +228,55 @@ func AddPublicKeyHandler(w http.ResponseWriter, r *http.Request, encryptResponse
 	RespondToLoggedInUser(w, r, encryptResponse, message, userID)
 }
 
+// this function uses V1
+func GetUserHandler(w http.ResponseWriter, r *http.Request) {
+	userIDStr := chi.URLParam(r, "userID")
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid userID format")
+		return
+	}
+
+	user, err := db.GetUserByID(dbAccessor, userID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to fetch user")
+		return
+	}
+
+	following, err := GetFollowingNames(dbAccessor, userID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to get folling names")
+		return
+	}
+
+	interests, err := GetUserInterestIDs(dbAccessor, userID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to get interests")
+		return
+	}
+
+	// Exclude sensitive fields from the response
+	response := res.GetUserResponse{
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Nickname:      user.Nickname,
+		DateOfBirth:   user.DateOfBirth,
+		Field:         user.Field,
+		Interests:     interests,
+		Biography:     user.Biography,
+		LastEducation: user.LastEducation.Name,
+		Lcourse:       user.Lcourse,
+		Currently:     user.Currently.Name,
+		Ccourse:       user.Ccourse,
+		OpenToColab:   user.OpenToColab,
+		Following:     following,
+		ProfilePhoto:  user.ProfilePhoto,
+	}
+
+	RespondWithJSON(w, http.StatusOK, response)
+}
+
 //--------------	HELPER ----------------//
 
 func RespondToLoggedInUser(w http.ResponseWriter, r *http.Request, encryptResponse bool, response interface{}, userID uuid.UUID) {
@@ -246,4 +301,32 @@ func RespondToLoggedInUser(w http.ResponseWriter, r *http.Request, encryptRespon
 		// Enviar a resposta sem encriptação
 		RespondWithJSON(w, http.StatusOK, response)
 	}
+}
+
+func GetFollowingNames(accessor *gorm.DB, userID uuid.UUID) ([]string, error) {
+	var user db.User
+	if err := accessor.Preload("Following").First(&user, userID).Error; err != nil {
+		return nil, err
+	}
+
+	followingNames := make([]string, len(user.Following))
+	for i, followingUser := range user.Following {
+		followingNames[i] = followingUser.FirstName + " " + followingUser.LastName
+	}
+
+	return followingNames, nil
+}
+
+func GetUserInterestIDs(accessor *gorm.DB, userID uuid.UUID) ([]string, error) {
+	var user db.User
+	if err := accessor.Preload("Interests").First(&user, userID).Error; err != nil {
+		return nil, err
+	}
+
+	var interestIDs []string
+	for _, interest := range user.Interests {
+		interestIDs = append(interestIDs, strconv.FormatUint(uint64(interest.ID), 10))
+	}
+
+	return interestIDs, nil
 }

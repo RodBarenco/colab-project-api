@@ -247,3 +247,83 @@ func RemoveCitationHandler(w http.ResponseWriter, r *http.Request, encryptRespon
 
 	RespondToLoggedInUser(w, r, encryptResponse, response, userID)
 }
+
+// ---------------------- FOLLOW USER-----------------------------------//
+
+func FollowUserHandler(w http.ResponseWriter, r *http.Request, e bool) {
+	var requestPayload db.AddUserToFollowing
+
+	// Decode the request body into the AddUserToFollowing struct
+	err := json.NewDecoder(r.Body).Decode(&requestPayload)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Check if the user ID in the URL matches the one in the request body
+	userIDFromURL := chi.URLParam(r, "userID")
+	if userIDFromURL != requestPayload.UserID.String() {
+		RespondWithError(w, http.StatusBadRequest, "User IDs do not match")
+		return
+	}
+
+	// Validate the FollowingID
+	if requestPayload.FollowingID == uuid.Nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid FollowingID")
+		return
+	}
+
+	// Call the FollowUser function
+	err = db.FollowUser(dbAccessor, requestPayload.UserID, requestPayload.FollowingID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to follow user")
+		return
+	}
+
+	response := res.FollowUserResponse{
+		UserID:      userIDFromURL,
+		FollowingID: requestPayload.FollowingID.String(),
+		Message:     "User followed successfully",
+	}
+
+	RespondToLoggedInUser(w, r, e, response, requestPayload.UserID)
+}
+
+func UnfollowUserHandler(w http.ResponseWriter, r *http.Request, e bool) {
+	var requestPayload db.AddUserToFollowing
+
+	// Decode the request body into the AddUserToFollowing struct
+	err := json.NewDecoder(r.Body).Decode(&requestPayload)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Check if the user ID in the URL matches the one in the request body
+	userIDFromURL := chi.URLParam(r, "userID")
+	if userIDFromURL != requestPayload.UserID.String() {
+		RespondWithError(w, http.StatusBadRequest, "User IDs do not match")
+		return
+	}
+
+	// Validate the FollowingID
+	if requestPayload.FollowingID == uuid.Nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid FollowingID")
+		return
+	}
+
+	// Call the UnfollowUser function
+	err = db.UnfollowUser(dbAccessor, requestPayload.UserID, requestPayload.FollowingID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to unfollow user")
+		return
+	}
+
+	response := res.FollowUserResponse{
+		UserID:      userIDFromURL,
+		FollowingID: requestPayload.FollowingID.String(),
+		Message:     "User unfollowed successfully",
+	}
+
+	RespondToLoggedInUser(w, r, e, response, requestPayload.UserID)
+}

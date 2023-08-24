@@ -67,6 +67,19 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		validationErrors = append(validationErrors, "Biography must have 3 to 500 characters - and valid characters-words")
 	}
 
+	if !utils.IsValidImage(body.ProfilePhoto) {
+		validationErrors = append(validationErrors, "Invalid photo format")
+	}
+
+	imageURL, err := SaveImageToDBHandler(body.ProfilePhoto) // here saves the photo
+	if err != nil {
+		validationErrors = append(validationErrors, "Failed to save photo")
+	}
+
+	if !utils.IsValidImageLink(imageURL) {
+		validationErrors = append(validationErrors, "Invalid user photo link")
+	}
+
 	// Perform parallel database validations - that need to access DB
 	var wg sync.WaitGroup
 	wg.Add(3)
@@ -148,6 +161,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		LastEducationID: body.LastEducationID,
 		CurrentlyID:     body.CurrentlyID,
 		OpenToColab:     body.OpenToColab,
+		ProfilePhoto:    imageURL,
 	}
 
 	// Access the gorm.DB connection using dbAccessor

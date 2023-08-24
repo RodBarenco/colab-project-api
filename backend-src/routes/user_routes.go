@@ -24,6 +24,8 @@ func UserRoutes(secretKey string) http.Handler {
 	router.Patch("/add-cited-article/{userID}", userActionHandler(secretKey, handlers.AddCitationHandler, false))
 	router.Patch("/remove-cited-article/{userID}", userActionHandler(secretKey, handlers.RemoveCitationHandler, false))
 	router.Patch("/add-key/{userID}", userActionHandler(secretKey, handlers.AddPublicKeyHandler, false))
+	router.Patch("/follow/{userID}", userActionHandler(secretKey, handlers.FollowUserHandler, false))
+	router.Patch("/unfollow/{userID}", userActionHandler(secretKey, handlers.UnfollowUserHandler, false))
 
 	//encypted responses----------------------------------------------------------------------------
 
@@ -38,6 +40,8 @@ func UserRoutes(secretKey string) http.Handler {
 	router.Patch("/add-cited-article-ecpt/{userID}", userActionHandler(secretKey, handlers.AddCitationHandler, true))
 	router.Patch("/remove-cited-article-ecpt/{userID}", userActionHandler(secretKey, handlers.RemoveCitationHandler, true))
 	router.Patch("/add-key-ecpt/{userID}", userActionHandler(secretKey, handlers.AddPublicKeyHandler, true))
+	router.Patch("/follow-ecpt/{userID}", userActionHandler(secretKey, handlers.FollowUserHandler, true))
+	router.Patch("/unfollow-ecpt/{userID}", userActionHandler(secretKey, handlers.UnfollowUserHandler, true))
 
 	return router
 }

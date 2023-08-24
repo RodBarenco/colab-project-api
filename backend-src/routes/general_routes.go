@@ -26,6 +26,7 @@ func GeneralRoutes() http.Handler {
 	router.Get("/articles/likedby/{id}", handlers.GetLikedByUsersHandler)
 	router.Get("/articles/isciting/{id}", handlers.GetCitingArticlesHandler)
 	router.Get("/articles/citedby/{id}", handlers.GetCitedByArticlesHandler)
+	router.Get("/getuser/{userID}", handlers.GetUserHandler)
 
 	router.Patch("/articles/share/{id}", handlers.IncrementArticleSharesHandler)
 

@@ -29,6 +29,7 @@ type SignupParams struct {
 	CurrentlyID     *uuid.UUID
 	OpenToColab     bool
 	CreatedAt       time.Time
+	ProfilePhoto    string
 }
 
 // Signup creates a new user and saves it to the database.
@@ -67,6 +68,7 @@ func Signup(DB *gorm.DB, params SignupParams) (int, error) {
 		LastEducationID: params.LastEducationID,
 		CurrentlyID:     params.CurrentlyID,
 		OpenToColab:     params.OpenToColab,
+		ProfilePhoto:    params.ProfilePhoto,
 	}
 
 	// Save the user to the database using gorm's Create method

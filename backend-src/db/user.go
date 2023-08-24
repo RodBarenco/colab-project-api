@@ -28,6 +28,8 @@ type User struct {
 	OpenToColab     bool
 	CreatedAt       time.Time `gorm:"autoCreateTime"`
 	PublicKey       string
+	Following       []*User `gorm:"many2many:user_following;"`
+	ProfilePhoto    string  // URL for profile photo
 }
 
 func GetUserByID(db *gorm.DB, userID uuid.UUID) (User, error) {
@@ -209,4 +211,49 @@ func GetUserPublicKey(db *gorm.DB, userID uuid.UUID) (string, error) {
 		return "", result.Error
 	}
 	return user.PublicKey, nil
+}
+
+// FOLLOW
+
+type AddUserToFollowing struct {
+	UserID      uuid.UUID
+	FollowingID uuid.UUID
+}
+
+func FollowUser(db *gorm.DB, followerID, followingID uuid.UUID) error {
+	follower := User{}
+	following := User{}
+
+	// Find the users by their IDs
+	result := db.First(&follower, "id = ?", followerID)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	result = db.First(&following, "id = ?", followingID)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	// Add the following user to the follower's Following list
+	return db.Model(&follower).Association("Following").Append(&following)
+
+}
+
+func UnfollowUser(db *gorm.DB, followerID, followingID uuid.UUID) error {
+	follower := User{}
+	following := User{}
+
+	// Find the users by their IDs
+	result := db.First(&follower, "id = ?", followerID)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	result = db.First(&following, "id = ?", followingID)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return db.Model(&follower).Association("Following").Delete(&following)
 }

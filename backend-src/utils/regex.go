@@ -265,18 +265,6 @@ func IsValidArticleCoAuthors(coAuthors string) bool {
 	return regexp.MustCompile(coAuthorsRegex).MatchString(coAuthors)
 }
 
-func IsValidArticleCoverImage(coverImage string) bool {
-	// Clean and normalize the path
-	cleanPath := path.Clean(coverImage)
-
-	// If the cleaned path is empty, it's not a valid path
-	if cleanPath == "" {
-		return false
-	}
-
-	return true
-}
-
 // IMAGE --------------------------------------------------------------
 
 func IsValidImage(imageBase64 string) bool {
@@ -295,6 +283,18 @@ func IsValidImage(imageBase64 string) bool {
 
 	mime := mimetype.Detect(imageBytes)
 	return mime.Is("image/png") || mime.Is("image/jpeg") || mime.Is("image/gif")
+}
+
+func IsValidImageLink(coverImage string) bool {
+	// Clean and normalize the path
+	cleanPath := path.Clean(coverImage)
+
+	// If the cleaned path is empty, it's not a valid path
+	if cleanPath == "" {
+		return false
+	}
+
+	return true
 }
 
 // URL -------------------------------------------------------------------
