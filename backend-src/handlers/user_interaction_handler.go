@@ -250,7 +250,7 @@ func RemoveCitationHandler(w http.ResponseWriter, r *http.Request, encryptRespon
 
 // ---------------------- FOLLOW USER-----------------------------------//
 
-func FollowUserHandler(w http.ResponseWriter, r *http.Request, e bool) {
+func FollowUserHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
 	var requestPayload db.AddUserToFollowing
 
 	// Decode the request body into the AddUserToFollowing struct
@@ -286,10 +286,10 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request, e bool) {
 		Message:     "User followed successfully",
 	}
 
-	RespondToLoggedInUser(w, r, e, response, requestPayload.UserID)
+	RespondToLoggedInUser(w, r, encryptResponse, response, requestPayload.UserID)
 }
 
-func UnfollowUserHandler(w http.ResponseWriter, r *http.Request, e bool) {
+func UnfollowUserHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
 	var requestPayload db.AddUserToFollowing
 
 	// Decode the request body into the AddUserToFollowing struct
@@ -325,5 +325,5 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request, e bool) {
 		Message:     "User unfollowed successfully",
 	}
 
-	RespondToLoggedInUser(w, r, e, response, requestPayload.UserID)
+	RespondToLoggedInUser(w, r, encryptResponse, response, requestPayload.UserID)
 }

@@ -16,7 +16,7 @@ Routes for Availability Check:
 {}
 ```
 ### GET "v1/testerror"
-- Não é necessário enviar corpo.
+- Não é necessário enviar corpo. / No request body required.
 - resposta esperada - `401 Unauthorized`
 
 ```json
@@ -31,37 +31,37 @@ Routes applied to articles:
 ### GET "v1/articles"
 - Não é necessário enviar corpo. / No request body required.
 - resposta esperada – `200 Ok` / Expected response – `200 OK`
-Caso existam artigos registrados retorna no máximo os últimos 1000, no formato desse exemplo: / If there are registered articles, it returns a maximum of the last 1000, in the format of this example:
+- Caso existam artigos registrados retorna no máximo os últimos 1000, no formato desse exemplo: / If there are registered articles, it returns a maximum of the last 1000, in the format of this example:
 - [Retorno](#retorno-comum-para-artigos) comum para artigos. / [Return](#common-response-for-articles) common for articles.
 
 ### GET "v1/articles/home"
 - Não é necessário enviar corpo. / No request body required.
 - resposta esperada – `200 Ok` / Expected response – `200 OK`
-Caso existam artigos registrados retorna no máximo os últimos 50, no formato desse exemplo: / If there are registered articles, it returns a maximum of the last 50, in the format of this example:
+- Caso existam artigos registrados retorna no máximo os últimos 50, no formato desse exemplo: / If there are registered articles, it returns a maximum of the last 50, in the format of this example:
 - [Retorno](#retorno-comum-para-artigos) comum para artigos. / [Return](#common-response-for-articles) common for articles.
 
 ### GET "v1/articles/title/{title}"
 - Não é necessário enviar corpo. / No request body required.
 - resposta esperada – `200 Ok` / Expected response – `200 OK`
-Caso exista artigo com esse título o retorna da seguinte maneira: / If an article exists with this title, it returns in the following way:
+- Caso exista artigo com esse título o retorna da seguinte maneira: / If an article exists with this title, it returns in the following way:
 - [Retorno](#retorno-comum-para-artigos) comum para artigos. / [Return](#common-response-for-articles) common for articles.
 
 ### GET "v1/articles/subject/{subject} 
 - Não é necessário enviar corpo. / No request body required.
 - resposta esperada – `200 Ok` / Expected response – `200 OK`
-Caso existam artigos com esses assuntos os retorna da seguinte maneira: / If there are articles with these subjects, it returns them in the following way:
+- Caso existam artigos com esses assuntos os retorna da seguinte maneira: / If there are articles with these subjects, it returns them in the following way:
 - [Retorno](#retorno-comum-para-artigos) comum para artigos. / [Return](#common-response-for-articles) common for articles.
 
 ### GET "v1/articles/author/{author}"
 - Não é necessário enviar corpo. / No request body required.
 - resposta esperada – `200 Ok` / Expected response – `200 OK`
-Caso existam artigos com esse autor: / If there are articles by this author:
+- Caso existam artigos com esse autor: / If there are articles by this author:
 - [Retorno](#retorno-comum-para-artigos) comum para artigos. / [Return](#common-response-for-articles) common for articles.
 
 ### GET"/articles/field/{field}"
 - Não é necessário enviar corpo. / No request body required.
 - resposta esperada – `200 Ok` / Expected response – `200 OK`
-Caso existam artigos desse campo os retorna da seguinte maneira: / If there are articles from this field, it returns them in the following way:
+- Caso existam artigos desse campo os retorna da seguinte maneira: / If there are articles from this field, it returns them in the following way:
 - [Retorno](#retorno-comum-para-artigos) comum para artigos. / [Return](#common-response-for-articles) common for articles.
 
 ### Get "v1/articles/keywords/{keywords}"
@@ -73,7 +73,7 @@ Caso existam artigos desse campo os retorna da seguinte maneira: / If there are 
 ### GET"v1/articles/id/{id}"
 - Não é necessário enviar corpo. / No request body required.
 - resposta esperada – `200 Ok` / Expected response – `200 OK`
-Caso existam artigos com esse id os retorna da seguinte maneira: / If there are articles with this ID, it returns them in the following way:
+- Caso existam artigos com esse id os retorna da seguinte maneira: / If there are articles with this ID, it returns them in the following way:
 ```json
 {
 	"article": {

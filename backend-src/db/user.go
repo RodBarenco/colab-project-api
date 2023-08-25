@@ -2,6 +2,8 @@ package db
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -256,4 +258,100 @@ func UnfollowUser(db *gorm.DB, followerID, followingID uuid.UUID) error {
 	}
 
 	return db.Model(&follower).Association("Following").Delete(&following)
+}
+
+//-----------------------	UPDATE ---------------------------//
+
+type UserUpdateParams struct {
+	FirstName     *string
+	LastName      *string
+	Nickname      *string
+	Email         *string
+	Password      *string
+	DateOfBirth   *string
+	Field         *string
+	Biography     *string
+	Lcourse       *string
+	Ccourse       *string
+	OpenToColab   *bool
+	PublicKey     *string
+	ProfilePhoto  *string
+	LastEducation *Institution
+	Currently     *Institution
+}
+
+func UpdateUserFields(db *gorm.DB, userID uuid.UUID, updateParams UserUpdateParams) ([]string, error) {
+	user := User{ID: userID}
+	fildsUpdated := []string{}
+
+	if updateParams.FirstName != nil {
+		user.FirstName = *updateParams.FirstName
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated first name to: %s", *updateParams.FirstName))
+	}
+	if updateParams.LastName != nil {
+		user.LastName = *updateParams.LastName
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated last name to: %s", *updateParams.LastName))
+	}
+	if updateParams.Nickname != nil {
+		user.Nickname = *updateParams.Nickname
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated nick name to: %s", *updateParams.Nickname))
+	}
+	if updateParams.Biography != nil {
+		user.Biography = *updateParams.Biography
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated Biography to: %s", *updateParams.Biography))
+	}
+	if updateParams.DateOfBirth != nil {
+		dateOfBirth, err := time.Parse("2006-01-02", *updateParams.DateOfBirth)
+		if err != nil {
+			return nil, err
+		}
+		user.DateOfBirth = dateOfBirth
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated birth date to: %s", *updateParams.DateOfBirth))
+	}
+	if updateParams.Email != nil {
+		user.Email = *updateParams.Email
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated email to: %s", *updateParams.Email))
+	}
+	if updateParams.Password != nil {
+		user.Password = *updateParams.Password
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated password to: %s", *updateParams.Password))
+	}
+	if updateParams.Field != nil {
+		user.Field = *updateParams.Field
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated field to: %s", *updateParams.Field))
+	}
+	if updateParams.Ccourse != nil {
+		user.Ccourse = *updateParams.Ccourse
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated current course to: %s", *updateParams.Ccourse))
+	}
+	if updateParams.Lcourse != nil {
+		user.Lcourse = *updateParams.Lcourse
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated last course to: %s", *updateParams.Lcourse))
+	}
+	if updateParams.OpenToColab != nil {
+		user.OpenToColab = *updateParams.OpenToColab
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated open to colab to: %v", strconv.FormatBool(*updateParams.OpenToColab)))
+	}
+	if updateParams.ProfilePhoto != nil {
+		user.ProfilePhoto = *updateParams.ProfilePhoto
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated porfile photo to: %s", *updateParams.ProfilePhoto))
+	}
+	if updateParams.PublicKey != nil {
+		user.PublicKey = *updateParams.PublicKey
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Update publick keyto: %s", *updateParams.PublicKey))
+	}
+	if updateParams.LastEducation != nil {
+		user.LastEducation = *updateParams.LastEducation
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated last educatinal institution to: %s", *&updateParams.LastEducation.Name))
+	}
+	if updateParams.Currently != nil {
+		user.Currently = *updateParams.Currently
+		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated currently educational institution to: %s", *&updateParams.Currently.Name))
+	}
+
+	if err := db.Save(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return fildsUpdated, nil
 }

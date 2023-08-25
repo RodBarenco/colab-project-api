@@ -26,6 +26,7 @@ func UserRoutes(secretKey string) http.Handler {
 	router.Patch("/add-key/{userID}", userActionHandler(secretKey, handlers.AddPublicKeyHandler, false))
 	router.Patch("/follow/{userID}", userActionHandler(secretKey, handlers.FollowUserHandler, false))
 	router.Patch("/unfollow/{userID}", userActionHandler(secretKey, handlers.UnfollowUserHandler, false))
+	router.Patch("/update-user/{userID}", userActionHandler(secretKey, handlers.UpdateUserFieldsHandler, false))
 
 	//encypted responses----------------------------------------------------------------------------
 
@@ -42,6 +43,7 @@ func UserRoutes(secretKey string) http.Handler {
 	router.Patch("/add-key-ecpt/{userID}", userActionHandler(secretKey, handlers.AddPublicKeyHandler, true))
 	router.Patch("/follow-ecpt/{userID}", userActionHandler(secretKey, handlers.FollowUserHandler, true))
 	router.Patch("/unfollow-ecpt/{userID}", userActionHandler(secretKey, handlers.UnfollowUserHandler, true))
+	router.Patch("/update-user-ecpt/{userID}", userActionHandler(secretKey, handlers.UpdateUserFieldsHandler, true))
 
 	return router
 }

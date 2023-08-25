@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/RodBarenco/colab-project-api/db"
 	"github.com/RodBarenco/colab-project-api/res"
@@ -329,4 +332,205 @@ func GetUserInterestIDs(accessor *gorm.DB, userID uuid.UUID) ([]string, error) {
 	}
 
 	return interestIDs, nil
+}
+
+// ------------------- UPDATE ---------------- //
+// yet to be Optimized
+func UpdateUserFieldsHandler(w http.ResponseWriter, r *http.Request, encryptResponse bool) {
+	// Extract userID from the URL path
+	userIDStr := chi.URLParam(r, "userID")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid userID")
+		return
+	}
+
+	var updateParams db.UserUpdateParams
+	err = json.NewDecoder(r.Body).Decode(&updateParams)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// Create a slice to collect validation errors
+	validationErrors := []string{}
+
+	// initialize changes
+	changes := db.UserUpdateParams{
+		FirstName:     nil,
+		LastName:      nil,
+		Nickname:      nil,
+		Email:         nil,
+		Password:      nil,
+		DateOfBirth:   nil,
+		Field:         nil,
+		Biography:     nil,
+		Lcourse:       nil,
+		Ccourse:       nil,
+		OpenToColab:   nil,
+		PublicKey:     nil,
+		ProfilePhoto:  nil,
+		LastEducation: nil,
+		Currently:     nil,
+	}
+
+	// Perform validation checks on the request data
+	if updateParams.FirstName != nil {
+		changes.FirstName = updateParams.FirstName
+		if !utils.IsValidFirstName(*updateParams.FirstName) {
+			validationErrors = append(validationErrors, "First name must have 2 to 25 characters - and valid characters-words")
+		}
+	}
+
+	if updateParams.LastName != nil {
+		changes.LastName = updateParams.LastName
+		if !utils.IsValidLastName(*updateParams.LastName) {
+			validationErrors = append(validationErrors, "Last name must have 1 to 40 characters - and valid characters-words")
+		}
+	}
+
+	if updateParams.Nickname != nil {
+		changes.Nickname = updateParams.Nickname
+		if !utils.IsValidNickname(*updateParams.Nickname) {
+			validationErrors = append(validationErrors, "Nickname must have 2 to 30 characters - and valid characters-words")
+		}
+	}
+
+	if updateParams.Email != nil {
+		changes.Email = updateParams.Email
+		if !utils.IsValidEmail(*updateParams.Email) {
+			validationErrors = append(validationErrors, "Invalid email format")
+		}
+	}
+
+	if updateParams.Password != nil {
+		changes.Password = updateParams.Password
+		if !utils.IsValidPassword(*updateParams.Password) {
+			validationErrors = append(validationErrors, "Password must have at least 5 characters - and valid characters-words")
+		}
+	}
+
+	if updateParams.DateOfBirth != nil {
+		changes.DateOfBirth = updateParams.DateOfBirth
+		if !utils.IsValidDateOfBirth(*updateParams.DateOfBirth) {
+			validationErrors = append(validationErrors, "Invalid date of birth")
+		} else {
+			dob, err := time.Parse("2006-01-02", *updateParams.DateOfBirth)
+			if err != nil {
+				RespondWithError(w, http.StatusBadRequest, "invalid date of birth format. It must be in the format YYYY-MM-DD")
+				return
+			}
+
+			now := time.Now()
+
+			if dob.After(now) {
+				validationErrors = append(validationErrors, "Date of birth cannot be in the future")
+			}
+		}
+	}
+
+	if updateParams.Field != nil {
+		changes.Field = updateParams.Field
+		if !utils.IsValidField(*updateParams.Field) {
+			validationErrors = append(validationErrors, "Field must have 2 to 50 characters - and valid characters-words")
+		}
+	}
+
+	if updateParams.Biography != nil {
+		changes.Biography = updateParams.Biography
+		if !utils.IsValidBiography(*updateParams.Biography) {
+			validationErrors = append(validationErrors, "Biography must have 3 to 500 characters - and valid characters-words")
+		}
+	}
+
+	if updateParams.ProfilePhoto != nil {
+		if !utils.IsValidImage(*updateParams.ProfilePhoto) {
+			validationErrors = append(validationErrors, "Invalid photo format")
+		}
+
+		imageURL, err := SaveImageToDBHandler(*updateParams.ProfilePhoto) // here saves the photo
+		if err != nil {
+			validationErrors = append(validationErrors, "Failed to save photo")
+		}
+
+		if !utils.IsValidImageLink(imageURL) {
+			validationErrors = append(validationErrors, "Invalid user photo link")
+		}
+		changes.ProfilePhoto = &imageURL
+	}
+
+	// Perform parallel database validations - that need to access DB
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		if updateParams.Currently != nil {
+			changes.Currently = updateParams.Currently
+			if *updateParams.Ccourse != "" && *updateParams.Currently == (db.Institution{}) {
+				validationErrors = append(validationErrors, "Currently must be provided when Ccourse is provided")
+				return
+			}
+
+			ccourseValidation := utils.IsValidCcourse(*updateParams.Ccourse, *updateParams.Currently, dbAccessor)
+			if !ccourseValidation.IsValid {
+				if !ccourseValidation.ExistsInDB {
+					validationErrors = append(validationErrors, "Institution of current course does not exist or has not been registered")
+				} else {
+					validationErrors = append(validationErrors, "Invalid Ccourse format")
+				}
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if updateParams.LastEducation != nil {
+			changes.LastEducation = updateParams.LastEducation
+			if *updateParams.Lcourse != "" && *updateParams.LastEducation == (db.Institution{}) {
+				validationErrors = append(validationErrors, "LastEducation must be provided when Lcourse is provided")
+				return
+			}
+
+			lcourseValidation := utils.IsValidLcourse(*updateParams.Lcourse, *updateParams.LastEducation, dbAccessor)
+			if !lcourseValidation.IsValid {
+				if !lcourseValidation.ExistsInDB {
+					validationErrors = append(validationErrors, "Institution of last course does not exist or has not been registered")
+				} else {
+					validationErrors = append(validationErrors, "Invalid Lcourse format")
+				}
+			}
+		}
+	}()
+
+	wg.Wait()
+
+	// Perform other validation checks for fields like Email, Password, DateOfBirth, etc.
+
+	if len(validationErrors) > 0 {
+		formattedErrors := make([]string, len(validationErrors))
+
+		// Format each error message with the corresponding number
+		for i, errMsg := range validationErrors {
+			formattedErrors[i] = fmt.Sprintf("%d : %s", i+1, errMsg)
+		}
+
+		errorMessage := strings.Join(formattedErrors, " , ")
+
+		RespondWithError(w, http.StatusBadRequest, "{"+errorMessage+"}")
+		return
+	}
+
+	// Access the gorm.DB connection using dbAccessor
+	accessor := dbAccessor
+
+	getres, err := db.UpdateUserFields(accessor, userID, changes)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Error updating user fields")
+		return
+	}
+
+	response := getres
+
+	RespondToLoggedInUser(w, r, encryptResponse, response, userID)
 }
