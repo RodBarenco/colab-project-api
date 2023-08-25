@@ -268,6 +268,10 @@ func IsValidArticleCoAuthors(coAuthors string) bool {
 // IMAGE --------------------------------------------------------------
 
 func IsValidImage(imageBase64 string) bool {
+
+	if strings.TrimSpace(imageBase64) == "" {
+		return true
+	}
 	// Maximum file size allowed: 8 megabytes
 	maxFileSize := 4 * 1024 * 1024 // 4 MB in bytes
 
@@ -286,6 +290,10 @@ func IsValidImage(imageBase64 string) bool {
 }
 
 func IsValidImageLink(coverImage string) bool {
+
+	if strings.TrimSpace(coverImage) == "" {
+		return true
+	}
 	// Clean and normalize the path
 	cleanPath := path.Clean(coverImage)
 

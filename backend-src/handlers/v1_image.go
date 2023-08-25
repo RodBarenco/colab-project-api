@@ -12,6 +12,10 @@ import (
 // SaveImageToDBHandler saves the image to the database and returns the corresponding URL.
 // Note: This handler does not have a direct route and is intended to be called by other functions.
 func SaveImageToDBHandler(imageBase64 string) (string, error) {
+	if imageBase64 == "" {
+		return "", nil
+	}
+
 	imageID, err := db.SaveImageToDB(dbAccessor, imageBase64)
 	if err != nil {
 		return "", err
