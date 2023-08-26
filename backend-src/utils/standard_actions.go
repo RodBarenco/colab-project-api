@@ -32,3 +32,11 @@ func GetNamesOfUsersThatLikedArticles(dbAcess *gorm.DB, articleID uuid.UUID) ([]
 	}
 	return article.LikedBy, nil
 }
+
+func GetUserIDByEmail(dbAccessor *gorm.DB, email string) (uuid.UUID, error) {
+	var user db.User
+	if err := dbAccessor.Where("email = ?", email).First(&user).Error; err != nil {
+		return uuid.UUID{}, err
+	}
+	return user.ID, nil
+}

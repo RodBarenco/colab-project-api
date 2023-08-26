@@ -31,6 +31,8 @@ func GeneralRoutes() http.Handler {
 
 	// user
 	router.Get("/getuser/{userID}", handlers.GetUserHandler)
+	router.Patch("/recoverynow/", handlers.UpdatePasswordHandler)
+	router.Post("/send-recovery-mail", handlers.SendRecoveryEmailHandler)
 
 	// art work
 	router.Get("/artworks", handlers.GetLatestArtworksHandler)

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/RodBarenco/colab-project-api/connection"
+	"github.com/RodBarenco/colab-project-api/recoveruserpass"
 	"github.com/RodBarenco/colab-project-api/rsakeys"
 )
 
@@ -19,8 +20,16 @@ func StartApp(arg string) {
 	switch arg {
 	case "1":
 		connection.StartServer()
+		if err := recoveruserpass.InitRecoverTokenSecret("1"); err != nil {
+			log.Fatalf("Failed to ensure recovery keys: %v", err)
+		}
+
 	case "2":
 		connection.StartTestServer()
+		if err := recoveruserpass.InitRecoverTokenSecret("2"); err != nil {
+			log.Fatalf("Failed to ensure recovery keys: %v", err)
+		}
+
 	default:
 		log.Fatal("Was not possible to start Dev/Test mode!!!")
 	}
