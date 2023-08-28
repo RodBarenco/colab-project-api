@@ -68,13 +68,13 @@ func UpdatePasswordHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Atualizar a senha no banco de dados
-	err = recoveruserpass.UpdatePassword(dbAccessor, params.UserID, params.Email, params.Password, tokenStr)
+	err = recoveruserpass.UpdatePassword(dbAccessor, params.UserID, params.Password)
 	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, "Error updating password")
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	response := "Password updated successfully"
+	response := "Password updated successfully, your new pass is: " + params.Password
 
 	RespondWithJSON(w, http.StatusOK, response)
 }

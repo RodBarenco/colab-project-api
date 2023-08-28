@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
 	"github.com/RodBarenco/colab-project-api/db"
+	"github.com/RodBarenco/colab-project-api/utils"
 	"github.com/google/uuid"
 )
 
@@ -46,7 +46,7 @@ func Signup(DB *gorm.DB, params SignupParams) (int, error) {
 	}
 
 	// Hash the password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(params.Password), bcrypt.DefaultCost)
+	hashedPassword, err := utils.HashPassword(params.Password)
 	if err != nil {
 		// Return a more specific error message including the original password
 		return http.StatusInternalServerError, fmt.Errorf("failed to hash the password: %w", err)
@@ -57,7 +57,7 @@ func Signup(DB *gorm.DB, params SignupParams) (int, error) {
 		FirstName:       params.FirstName,
 		LastName:        params.LastName,
 		Email:           params.Email,
-		Password:        string(hashedPassword),
+		Password:        hashedPassword,
 		DateOfBirth:     dateOfBirth,
 		Nickname:        params.Nickname,
 		Field:           params.Field,

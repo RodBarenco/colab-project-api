@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -313,7 +314,13 @@ func UpdateUserFields(db *gorm.DB, userID uuid.UUID, updateParams UserUpdatePara
 		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated email to: %s", *updateParams.Email))
 	}
 	if updateParams.Password != nil {
-		user.Password = *updateParams.Password
+
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*updateParams.Password), bcrypt.DefaultCost)
+		if err != nil {
+			// Return a more specific error message including the original password
+			return nil, err
+		}
+		user.Password = string(hashedPassword)
 		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated password to: %s", *updateParams.Password))
 	}
 	if updateParams.Field != nil {

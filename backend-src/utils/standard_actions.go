@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/RodBarenco/colab-project-api/db"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -39,4 +40,12 @@ func GetUserIDByEmail(dbAccessor *gorm.DB, email string) (uuid.UUID, error) {
 		return uuid.UUID{}, err
 	}
 	return user.ID, nil
+}
+
+func HashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
 }

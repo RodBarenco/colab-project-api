@@ -57,14 +57,30 @@ type RecoverParams struct {
 	RandomPass string
 }
 
-func UpdatePassword(accessor *gorm.DB, userID uuid.UUID, email, newPassword, token string) error {
+func UpdatePassword(accessor *gorm.DB, userID uuid.UUID, newPassword string) error {
 
-	user := db.User{ID: userID}
+	var user db.User
+	result := accessor.First(&user, userID)
+	if result.Error != nil {
+		return result.Error
+	}
 
 	if newPassword != "" && !utils.IsValidPassword(newPassword) {
 		return fmt.Errorf("invalid password!")
 	}
-	user.Password = newPassword
+
+	hashedPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		// Return a more specific error message including the original password
+		return err
+	}
+
+	user.Password = string(hashedPassword)
+
+	result = accessor.Save(&user)
+	if result.Error != nil {
+		return result.Error
+	}
 
 	return nil
 }
