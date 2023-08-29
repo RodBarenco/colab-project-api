@@ -24,6 +24,7 @@ type Article struct {
 	Shares         int
 	CoAuthors      string
 	CoverImage     string
+	ApprovedBy     []*Admin `gorm:"many2many:approved_by;"`
 }
 
 type ArticleSearchParams struct {
