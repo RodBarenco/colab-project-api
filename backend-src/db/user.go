@@ -285,6 +285,10 @@ func UpdateUserFields(db *gorm.DB, userID uuid.UUID, updateParams UserUpdatePara
 	user := User{ID: userID}
 	fildsUpdated := []string{}
 
+	if err := db.Where("id = ?", userID).First(&user).Error; err != nil {
+		return nil, err
+	}
+
 	if updateParams.FirstName != nil {
 		user.FirstName = *updateParams.FirstName
 		fildsUpdated = append(fildsUpdated, fmt.Sprintf("Updated first name to: %s", *updateParams.FirstName))

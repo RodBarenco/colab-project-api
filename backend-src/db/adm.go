@@ -25,7 +25,7 @@ type Admin struct {
 	CurrentlyID  *uuid.UUID  `gorm:"null;type:uuid"`
 	CreatedAt    time.Time   `gorm:"autoCreateTime"`
 	PublicKey    string      `gorm:"not null"`
-	isAccepted   bool
+	IsAccepted   bool
 	Permissions  uint `gorm:"not null"`
 	ProfilePhoto string
 }
@@ -169,7 +169,7 @@ func ModifyAdminPermissions(db *gorm.DB, allower uuid.UUID, allowed uuid.UUID, p
 	}
 
 	// Check if the permissions value is valid.
-	if permissions < 0 || permissions > 5 {
+	if permissions < 0 || permissions > 4 {
 		return errors.New("invalid permissions value")
 	}
 
