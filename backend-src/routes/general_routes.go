@@ -49,6 +49,9 @@ func GeneralRoutes() http.Handler {
 	// register-login
 	router.Post("/register", handlers.RegisterHandler)
 	router.Post("/login", handlers.LoginHandler)
+	router.Post("/Adminlogin", handlers.AdminLoginHandler)
+
+	router.Get("/show-pkey", handlers.GetPKeyHandler)
 
 	return router
 }

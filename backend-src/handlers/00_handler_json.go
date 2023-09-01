@@ -80,27 +80,57 @@ func RespondWithEncryptedJSON(w http.ResponseWriter, code int, payload interface
 		code = http.StatusOK
 	}
 
-	// Converter o payload para JSON
+	// Convert the payload to JSON
 	data, err := json.Marshal(convertToJSON(payload))
 	if err != nil {
 		log.Printf("Failed to marshal JSON response %v", payload)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	// Converter o payload para bytes
+	// Convert the payload to bytes
 	payloadBytes := []byte(data)
 
-	// Encriptar o payload
-	encryptedData, err := rsakeys.EncryptAndEncode(publicKey, payloadBytes)
-	if err != nil {
-		log.Printf("Failed to encrypt payload: %v", err)
-		RespondWithError(w, http.StatusInternalServerError, "Failed to encrypt data")
-		return
+	var encryptedData string
+	var aesKey []byte
+
+	if len(payloadBytes) > 512 { // Use your desired threshold here
+		// Generate AES key for large files
+		aesKey, err = rsakeys.GenerateAESKeyForLargeFile()
+		if err != nil {
+			log.Printf("Failed to generate AES key: %v", err)
+			RespondWithError(w, http.StatusInternalServerError, "Failed to encrypt data")
+			return
+		}
+
+		// Encrypt payload with AES
+		encryptedData, err = rsakeys.EncryptAES(aesKey, payloadBytes)
+		if err != nil {
+			log.Printf("Failed to encrypt payload with AES: %v", err)
+			RespondWithError(w, http.StatusInternalServerError, "Failed to encrypt data")
+			return
+		}
+	} else {
+		// Encrypt payload with RSA and encode as base64
+		encryptedData, err = rsakeys.EncryptAndEncode(publicKey, payloadBytes)
+		if err != nil {
+			log.Printf("Failed to encrypt payload: %v", err)
+			RespondWithError(w, http.StatusInternalServerError, "Failed to encrypt data")
+			return
+		}
 	}
 
-	// Montar a resposta com o formato especificado
 	response := map[string]string{
 		"encrypted_data": encryptedData,
+	}
+
+	if aesKey != nil {
+		rsaEncryptedAESKey, err := rsakeys.EncryptAndEncode(publicKey, aesKey)
+		if err != nil {
+			log.Printf("Failed to encrypt AES key: %v", err)
+			RespondWithError(w, http.StatusInternalServerError, "Failed to encrypt data")
+			return
+		}
+		response["aes_key"] = rsaEncryptedAESKey
 	}
 
 	responseJSON, err := json.Marshal(response)

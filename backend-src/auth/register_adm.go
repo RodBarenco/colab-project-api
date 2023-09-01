@@ -57,11 +57,7 @@ func RegisterAdmin(params AdminRegistrationParams, accessor *gorm.DB) ([]string,
 	privateKeyBase64 := base64.StdEncoding.EncodeToString(privateKeyBytes)
 	messages = append(messages, fmt.Sprintf("\n %v ATENTION:%v %v  This is your private key. Under no circumstances lose this key. Take all security measures to protect it, that's your responsibility. Only with it you will be able to decode the messages you receive: %v \n %v", cY, rst, cB, rst, privateKeyBase64))
 
-	publicKeyBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
-	if err != nil {
-		messages = []string{fmt.Sprintf("error exporting public key: %v", err)}
-		return messages, "", err
-	}
+	publicKeyBytes := x509.MarshalPKCS1PublicKey(&privateKey.PublicKey)
 
 	publicKeyBase64 := base64.StdEncoding.EncodeToString(publicKeyBytes)
 	messages = append(messages, fmt.Sprintf("\n%v This is your public key and it will be exposed every time you log in: %v \n %v", cC, rst, publicKeyBase64))

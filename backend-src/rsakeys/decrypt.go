@@ -1,8 +1,11 @@
 package rsakeys
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rsa"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"os"
 )
@@ -35,4 +38,31 @@ func ReadPrivateKeyFromFile() (*rsa.PrivateKey, error) {
 	}
 
 	return privateKey, nil
+}
+
+// helper aes to large files
+
+func DecryptAES(key []byte, payload []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, fmt.Errorf("error creating AES cipher: %v", err)
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, fmt.Errorf("error creating GCM: %v", err)
+	}
+
+	nonceSize := gcm.NonceSize()
+	if len(payload) < nonceSize {
+		return nil, errors.New("ciphertext too short")
+	}
+
+	nonce, ciphertext := payload[:nonceSize], payload[nonceSize:]
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error decrypting payload: %v", err)
+	}
+
+	return plaintext, nil
 }

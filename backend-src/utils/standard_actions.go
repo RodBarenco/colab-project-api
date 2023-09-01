@@ -49,3 +49,11 @@ func HashPassword(password string) (string, error) {
 	}
 	return string(hashedPassword), nil
 }
+
+func GetAdminIDByEmail(dbAccessor *gorm.DB, email string) (uuid.UUID, error) {
+	var admin db.Admin
+	if err := dbAccessor.Where("email = ?", email).First(&admin).Error; err != nil {
+		return uuid.UUID{}, err
+	}
+	return admin.ID, nil
+}

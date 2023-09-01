@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
@@ -20,30 +21,60 @@ type LoginParams struct {
 }
 
 func Login(DB *gorm.DB, params LoginParams, secret string) (res.LoginRes, int, error) {
+	LoginRes, code, err := GenericLogin(DB, "user", params, secret)
+	if err != nil {
+		return LoginRes, code, err
+	}
+	return LoginRes, code, nil
+}
+
+func AdminLogin(DB *gorm.DB, params LoginParams, secret string) (res.LoginRes, int, error) {
+	LoginRes, code, err := GenericLogin(DB, "admin", params, secret)
+	if err != nil {
+		return LoginRes, code, err
+	}
+	return LoginRes, code, nil
+}
+
+func GenericLogin(DB *gorm.DB, userType string, params LoginParams, secret string) (res.LoginRes, int, error) {
 	var loginRes res.LoginRes
 
 	if params.Email == "" || params.Password == "" {
 		return loginRes, http.StatusBadRequest, fmt.Errorf("all required fields must be provided")
 	}
 
-	// Lookup for the user
+	// variables
 	user := db.User{}
-	result := DB.First(&user, "email = ?", params.Email)
+	admin := db.Admin{}
+	var pass string
+	var yourID uuid.UUID
+	var result *gorm.DB
 
-	if result.Error != nil {
-		return loginRes, http.StatusBadRequest, fmt.Errorf("User not found - invalid email or password!")
+	if userType == "user" {
+		result = DB.First(&user, "email = ?", params.Email)
+		pass = user.Password
+		yourID = user.ID
+	} else if userType == "admin" {
+		result = DB.First(&admin, "email = ?", params.Email)
+		pass = admin.Password
+		yourID = admin.ID
+	} else {
+		return loginRes, http.StatusBadRequest, fmt.Errorf("invalid user type")
 	}
 
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(params.Password))
+	if result.Error != nil {
+		return loginRes, http.StatusBadRequest, fmt.Errorf("%s not found - invalid email or password!", userType)
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(pass), []byte(params.Password))
 	if err != nil {
 		return loginRes, http.StatusBadRequest, fmt.Errorf("invalid email or password!")
 	}
 
-	// JWT
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID,
+		"sub": user.ID, // or user.(*db.Admin).ID, based on userType
 		"exp": time.Now().Add(time.Hour * 12).Unix(),
-		"aud": "user",
+		"aud": userType,
 	})
 
 	tokenString, err := token.SignedString([]byte(secret))
@@ -51,17 +82,15 @@ func Login(DB *gorm.DB, params LoginParams, secret string) (res.LoginRes, int, e
 		return loginRes, http.StatusBadRequest, fmt.Errorf("failed to create token correctly")
 	}
 
-	// Read the public key from the file
 	publicKey, err := rsakeys.ReadPublicKeyFromFile("public_key.der")
 	if err != nil {
 		return loginRes, http.StatusInternalServerError, fmt.Errorf("failed to read public key: %v", err)
 	}
 
-	// Populate the LoginRes struct with the necessary data
 	loginRes.Message = "Login successful!"
 	loginRes.Token = tokenString
 	loginRes.PublicKey = publicKey
-	loginRes.UserID = user.ID
+	loginRes.YourID = yourID
 
 	return loginRes, http.StatusOK, nil
 }

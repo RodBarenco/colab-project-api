@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"encoding/hex"
 	"encoding/json"
+
 	"io"
 	"net/http"
 	"strconv"
@@ -105,17 +106,47 @@ func DecryptionMiddleware(next http.Handler, privateKey *rsa.PrivateKey) http.Ha
 			return
 		}
 
-		// Decrypt the encrypted data using the server's private key
-		decryptedData, err := rsakeys.DecryptWithPrivateKey(privateKey, cipherText)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		// Check if "aes_key" is present and the payload is larger than 512 bytes
+		aesKeyHex, aesKeyPresent := encryptedJSON["aes_key"]
+		if aesKeyPresent && len(cipherText) > 512 {
+			// Decode the AES key from hexadecimal
+			aesKeyBytes, err := hex.DecodeString(aesKeyHex)
+			if err != nil {
+				http.Error(w, "Failed to decode AES key hex", http.StatusInternalServerError)
+				return
+			}
 
-		// Pass the decrypted JSON in the request body
-		r.Body = io.NopCloser(bytes.NewReader([]byte(decryptedData)))
-		r.ContentLength = int64(len(decryptedData))
-		r.Header.Set("Content-Length", strconv.Itoa(len(decryptedData)))
+			// Decrypt the AES key using the private key
+			decryptedAESKey, err := rsakeys.DecryptWithPrivateKey(privateKey, aesKeyBytes)
+			if err != nil {
+				http.Error(w, "Failed to decrypt AES key", http.StatusInternalServerError)
+				return
+			}
+
+			// Decrypt the encrypted data using the decrypted AES key
+			decryptedData, err := rsakeys.DecryptAES(decryptedAESKey, cipherText)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Pass the decrypted JSON in the request body
+			r.Body = io.NopCloser(bytes.NewReader([]byte(decryptedData)))
+			r.ContentLength = int64(len(decryptedData))
+			r.Header.Set("Content-Length", strconv.Itoa(len(decryptedData)))
+		} else {
+			// Decrypt the encrypted data using the private key
+			decryptedData, err := rsakeys.DecryptWithPrivateKey(privateKey, cipherText)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Pass the decrypted JSON in the request body
+			r.Body = io.NopCloser(bytes.NewReader([]byte(decryptedData)))
+			r.ContentLength = int64(len(decryptedData))
+			r.Header.Set("Content-Length", strconv.Itoa(len(decryptedData)))
+		}
 
 		next.ServeHTTP(w, r)
 	})

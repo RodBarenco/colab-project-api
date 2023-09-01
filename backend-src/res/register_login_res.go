@@ -16,7 +16,7 @@ type SignupRes struct {
 }
 
 type LoginRes struct {
-	UserID    uuid.UUID `json:"user_id"`
+	YourID    uuid.UUID `json:"your_id"`
 	Token     string    `json:"token"`
 	PublicKey string    `json:"public_key"`
 	Message   string    `json:"message"`

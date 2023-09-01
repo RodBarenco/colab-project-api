@@ -212,3 +212,14 @@ func CleanOldUnacceptedArticlesByDateAndField() {
 func CleanAllOldUnacceptedArticles() {
 	// TODO
 }
+
+// GET PKEY
+
+func GetAdminPublicKey(db *gorm.DB, AdminID uuid.UUID) (string, error) {
+	var admin Admin
+	result := db.Select("public_key").Where("id = ?", AdminID).First(&admin)
+	if result.Error != nil {
+		return "", result.Error
+	}
+	return admin.PublicKey, nil
+}
