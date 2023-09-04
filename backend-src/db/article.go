@@ -1,6 +1,7 @@
 package db
 
 import (
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -49,6 +50,11 @@ type ArticleParams struct {
 
 func CreateArticle(db *gorm.DB, newArticle ArticleParams) error {
 	newArticle.SubmissionDate = time.Now()
+
+	newArticle.Field = strings.ToLower(newArticle.Field)
+	newArticle.Subject = strings.ToLower(newArticle.Subject)
+	newArticle.Keywords = strings.ToLower(newArticle.Keywords)
+
 	article := Article{
 		Title:          newArticle.Title,
 		AuthorID:       newArticle.AuthorID,
@@ -88,6 +94,7 @@ func GetArticlesByTitle(db *gorm.DB, title string) ([]Article, error) {
 // Obter artigos filtrados por tema
 func GetArticlesBySubject(db *gorm.DB, subject string) ([]Article, error) {
 	var articles []Article
+	subject = strings.ToLower(subject)
 	err := db.Where("subject = ?", subject).Find(&articles).Error
 	return articles, err
 }
@@ -102,6 +109,7 @@ func GetArticlesByAuthor(db *gorm.DB, authorID uuid.UUID) ([]Article, error) {
 // Obter artigos filtrados por campo
 func GetArticlesByField(db *gorm.DB, field string) ([]Article, error) {
 	var articles []Article
+	field = strings.ToLower(field)
 	err := db.Where("field = ?", field).Find(&articles).Error
 	return articles, err
 }
@@ -110,6 +118,7 @@ func GetArticlesByField(db *gorm.DB, field string) ([]Article, error) {
 func GetArticlesByKeywords(db *gorm.DB, keywords ...string) ([]Article, error) {
 	var articles []Article
 	for _, keyword := range keywords {
+		keyword = strings.ToLower(keyword)
 		var filteredArticles []Article
 		err := db.Where("keywords LIKE ?", "%"+keyword+"%").Find(&filteredArticles).Error
 		if err != nil {

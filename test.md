@@ -3,7 +3,7 @@ If you prefer to read it in [English](#introduction)
 
 ## Introdução
 
-Esse projeto ainda está no começo e por isso o número de testes unitários para as funções implementadas no pacote "handlers" ainda é limitado. O objetivo dos testes unitários é garantir que as funções estejam funcionando corretamente e produzindo os resultados esperados.
+Esse projeto ainda está no começo e por isso o número de testes E2E para as funções implementadas no pacote "handlers" ainda é limitado. O objetivo dos testes E2E é garantir que as funções estejam funcionando corretamente e o projeto esteja produzindo os resultados esperados.
 
 ## Executando os Testes
 
@@ -48,7 +48,7 @@ Fique à vontade para contribuir com mais testes ou fazer melhorias nos testes e
 
 ## Introduction
 
-This project is still in its early stages, and as such, the number of unit tests for the functions implemented in the "handlers" package is still limited. The purpose of unit tests is to ensure that the functions are working correctly and producing the expected results.
+This project is still in its early stages, and as such, the number of E2E tests for the functions implemented in the "handlers" package is still limited. The purpose of E2E tests is to ensure that the functions are working correctly and the project producing the expected results.
 
 ## Running the Tests
 
