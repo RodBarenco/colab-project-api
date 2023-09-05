@@ -1,7 +1,7 @@
 If you prefer to read it in [English](#project-colab---backend---english)
 Si prefieres leerlo en [Español](#proyecto-colab---backend---español)
 
-[![](https://img.shields.io/badge/FlowChart%20-8AbBE2)](./FlowChart.png) [![](https://img.shields.io/badge/Setup-Guide%20-55ea85)](./setup-guide.md) [![](https://img.shields.io/badge/Tests%20-e86c45)](./test.md) [![](https://img.shields.io/badge/V1-routes%20-ffff1d)](./v1_routes.md)
+[![](https://img.shields.io/badge/FlowChart%20-8AbBE2)](./FlowChart.png) [![](https://img.shields.io/badge/Setup-Guide%20-55ea85)](./setup-guide.md) [![](https://img.shields.io/badge/Tests%20-e86c45)](./test.md) [![](https://img.shields.io/badge/V1-routes%20-ffff1d)](./v1_routes.md) [![](https://img.shields.io/badge/🔒-cryptography%20-aa15ee)](./crypto.md)
 
 # Projeto Colab - Backend - Português
 

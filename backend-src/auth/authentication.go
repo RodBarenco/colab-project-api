@@ -72,7 +72,7 @@ func GenericLogin(DB *gorm.DB, userType string, params LoginParams, secret strin
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID, // or user.(*db.Admin).ID, based on userType
+		"sub": yourID, // or user.(*db.Admin).ID, based on userType
 		"exp": time.Now().Add(time.Hour * 12).Unix(),
 		"aud": userType,
 	})
