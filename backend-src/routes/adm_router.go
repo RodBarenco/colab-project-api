@@ -15,7 +15,11 @@ func AdmRoutes(secretKey string) http.Handler {
 	router.Get("/testerror", handlers.HandlerError)
 
 	router.Patch("/approve-article/{adminID}", adminActionHandler(secretKey, handlers.ApproveArticleHandler))
+	router.Patch("/approve-admin/{adminID}", adminActionHandler(secretKey, handlers.ApproveAdminHandler))
+	router.Patch("/disapprove-admin/{adminID}", adminActionHandler(secretKey, handlers.DisapproveAdminHandler))
+	router.Patch("/mod-permission-admin/{adminID}", adminActionHandler(secretKey, handlers.ModifyAdminPermissionsHandler))
 
+	router.Delete("/delete-article/{adminID}", adminActionHandler(secretKey, handlers.DeleteArticleHandler))
 	return router
 }
 
