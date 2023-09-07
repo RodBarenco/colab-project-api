@@ -30,6 +30,9 @@ A seguir estão as etapas para montar e rodar o projeto. Certifique-se de ter o 
 PORT=numero_da_porta
 DATABASE_URL="string_de_conexao_com_banco_de_dados"
 SECRET=chave_secreta_do_JWT
+SMTP_API_KEY=""
+SMTP_SERVER=""
+SMTP_SENDER=""
 ```
 ## Execução do Projeto
 
@@ -58,7 +61,7 @@ SECRET=outra_chave_secreta_do_JWT
 ---
 Com essas etapas concluídas, você deve estar pronto para montar e rodar o projeto com sucesso. Caso encontre algum problema, consulte as instruções acima novamente ou verifique a documentação das bibliotecas utilizadas para obter mais informações.
 
-Lembre-se de substituir `nome_do_executavel` pelo nome real do executável gerado, assim como os números de portas, strings de conexão com de banco de dados e chaves secretas.
+Lembre-se de substituir `nome_do_executavel` pelo nome real do executável gerado, assim como os números de portas, strings de conexão com de banco de dados, chaves secretas e conexão com seu SMTP.
 
 ---
 ## Instructions for Setting Up and Running the Project
@@ -90,6 +93,9 @@ Below are the steps to set up and run the project. Make sure you have Go Languag
 PORT=port_number
 DATABASE_URL="database_connection_string"
 SECRET=JWT_secret_key
+SMTP_API_KEY=""
+SMTP_SERVER=""
+SMTP_SENDER=""
 ```
 ## Running the Project
 
@@ -118,4 +124,4 @@ SECRET=another_JWT_secret_key
 ---
 With these steps completed, you should be ready to set up and run the project successfully. If you encounter any issues, please refer back to the instructions above or consult the documentation of the used libraries for further information.
 
-Remember to replace executable_name with the actual name of the generated executable, as well as the port numbers, database connection strings, and secret keys.
+Remember to replace executable_name with the actual name of the generated executable, as well as the port numbers, database connection strings, secret keys and SMTP connection.

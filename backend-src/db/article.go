@@ -219,3 +219,15 @@ func GetRecommendedArticles(db *gorm.DB, userID uuid.UUID, monthsAgo int) ([]Art
 
 	return articles, otherArticles, nil
 }
+
+// Returns unaccepted articles
+
+func GetUnacceptedArticlesByID(db *gorm.DB, ids []uuid.UUID) ([]Article, error) {
+	var unacceptedArticles []Article
+
+	if err := db.Where("is_accepted = ?", false).Where("id IN (?)", ids).Find(&unacceptedArticles).Error; err != nil {
+		return nil, err
+	}
+
+	return unacceptedArticles, nil
+}

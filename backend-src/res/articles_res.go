@@ -67,3 +67,18 @@ type ArticleCitingCitedRes struct {
 	Articles []ArticleCitingCited `json:"articles"`
 	Message  string               `json:"message"`
 }
+
+//-------------------------------------------------------------
+// for admins
+
+type ArticleAdminFormat struct {
+	ID             uuid.UUID `json:"id"`
+	Title          string    `json:"title"`
+	Field          string    `json:"field"`
+	SubmissionDate string    `json:"submission_date"`
+}
+
+type ArticleAdminFormatRes struct {
+	Articles []ArticleAdminFormat `json:"articles"`
+	Message  string               `json:"message"`
+}
