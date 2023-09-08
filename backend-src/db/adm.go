@@ -230,7 +230,7 @@ func ModifyAdminPermissions(db *gorm.DB, allower uuid.UUID, allowed uuid.UUID, p
 	}
 
 	// Check if the current user has the necessary permissions.
-	if admAllower.Permissions < 4 {
+	if admAllower.Permissions < 3 {
 		return errors.New("unauthorized")
 	}
 
