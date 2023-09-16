@@ -50,6 +50,7 @@ func GeneralRoutes() http.Handler {
 	router.Post("/register", handlers.RegisterHandler)
 	router.Post("/login", handlers.LoginHandler)
 	router.Post("/Adminlogin", handlers.AdminLoginHandler)
+	router.Post("/registerNewAdmin", handlers.RegisterNewAdmin)
 
 	router.Get("/show-pkey", handlers.GetPKeyHandler)
 

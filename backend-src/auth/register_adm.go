@@ -31,6 +31,18 @@ type AdminRegistrationParams struct {
 	Permissions  uint
 	ProfilePhoto string
 }
+type NewAdminRegistrationParams struct {
+	FirstName    string
+	LastName     string
+	Nickname     string
+	Email        string
+	Password     string
+	DateOfBirth  string
+	Title        string
+	Field        string
+	Biography    string
+	ProfilePhoto string
+}
 
 // this function recives params for registration, and the access to database and generat a Admin
 // then returns []friendly messages, a publicKey string and error

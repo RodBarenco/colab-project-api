@@ -21,3 +21,8 @@ type LoginRes struct {
 	PublicKey string    `json:"public_key"`
 	Message   string    `json:"message"`
 }
+
+type AdminSignup struct {
+	Message1 []string  `json:"message_1"`
+	Message2 SignupRes `json:"message_2"`
+}

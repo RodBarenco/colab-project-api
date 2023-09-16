@@ -144,6 +144,10 @@ func IsValidPassword(password string) bool {
 
 func IsValidNickname(nickname string) bool {
 	// Check if the nickname contains any forbidden keyword
+	if nickname == "" {
+		return true
+	}
+
 	if containsForbiddenKeyword(nickname) {
 		return false
 	}
@@ -155,6 +159,10 @@ func IsValidNickname(nickname string) bool {
 
 func IsValidField(field string) bool {
 	// Check if the field contains any forbidden symbol
+	if field == "" {
+		return true
+	}
+
 	if containsForbiddenSymbol(field) {
 		return false
 	}
@@ -168,7 +176,30 @@ func IsValidField(field string) bool {
 	return regexp.MustCompile(fieldRegex).MatchString(field)
 }
 
+func IsValidTitle(title string) bool {
+	if title == "" {
+		return true
+	}
+	// Check if the field contains any forbidden symbol
+	if containsForbiddenSymbol(title) {
+		return false
+	}
+
+	if containsForbiddenKeyword(title) {
+		return false
+	}
+
+	// Check if the field matches the required pattern (alphanumeric characters, hyphens, underscores, commas, periods, spaces, up to 50 characters)
+	fieldRegex := `^[A-Za-z0-9_\-,. ]{3,50}$`
+	return regexp.MustCompile(fieldRegex).MatchString(title)
+}
+
 func IsValidBiography(biography string) bool {
+
+	if biography == "" {
+		return true
+	}
+
 	// Check if the biography contains any forbidden symbol
 	if containsForbiddenSymbol(biography) {
 		return false

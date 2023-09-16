@@ -58,6 +58,131 @@ func GenerateRootAdminIfNeededHandler() {
 	return
 }
 
+func RegisterNewAdmin(w http.ResponseWriter, r *http.Request) {
+	var body auth.NewAdminRegistrationParams
+
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	//validations ---------------------------------------------------
+
+	if !utils.IsValidFirstName(body.FirstName) {
+		RespondWithError(w, http.StatusBadRequest, "First name must have 2 to 25 characters - and valid characters-words")
+		return
+	}
+
+	if !utils.IsValidLastName(body.LastName) {
+		RespondWithError(w, http.StatusBadRequest, "Last name must have 1 to 40 characters - and valid characters-words")
+		return
+	}
+
+	if !utils.IsValidNickname(body.Nickname) {
+		RespondWithError(w, http.StatusBadRequest, "Nickname must have 2 to 30 characters - and valid characters-words")
+		return
+	}
+
+	if !utils.IsValidEmail(body.Email) {
+		RespondWithError(w, http.StatusBadRequest, "Invalid email format")
+		return
+	}
+
+	if !utils.IsValidPassword(body.Password) {
+		RespondWithError(w, http.StatusBadRequest, "Password must have at least 5 characters - and valid characters-words")
+		return
+	}
+
+	if !utils.IsValidDateOfBirth(body.DateOfBirth) {
+		RespondWithError(w, http.StatusBadRequest, "Invalid Data of Birth")
+		return
+	} else {
+		dob, _ := time.Parse("2006-01-02", body.DateOfBirth)
+
+		now := time.Now()
+
+		if dob.After(now) {
+			RespondWithError(w, http.StatusBadRequest, "Date of birth cannot be in the future")
+			return
+		}
+	}
+
+	if !utils.IsValidField(body.Field) {
+		RespondWithError(w, http.StatusBadRequest, "Field must have 2 to 50 characters - and valid characters-words")
+		return
+	}
+
+	if !utils.IsValidBiography(body.Biography) {
+		RespondWithError(w, http.StatusBadRequest, "Biography must have 3 to 500 characters - and valid characters-words")
+		return
+	}
+
+	if !utils.IsValidTitle(body.Title) {
+		RespondWithError(w, http.StatusBadRequest, "Title must have 3 to 50 characters - and valid characters-words")
+		return
+	}
+
+	if !utils.IsValidImage(body.ProfilePhoto) {
+		RespondWithError(w, http.StatusBadRequest, "Invalid photo format")
+		return
+	}
+
+	imageURL, err := SaveImageToDBHandler(body.ProfilePhoto) // here saves the photo
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Check if there is at least one admin in the database
+	accessor := dbAccessor
+
+	params := auth.AdminRegistrationParams{
+		FirstName:    body.FirstName,
+		LastName:     body.LastName,
+		Nickname:     body.Nickname,
+		Email:        body.Email,
+		Password:     body.Password,
+		DateOfBirth:  body.DateOfBirth,
+		Field:        body.Field,
+		Biography:    body.Biography,
+		ProfilePhoto: imageURL,
+		Title:        body.Title,
+		Permissions:  0,
+		IsAccepted:   false,
+	}
+
+	message1, pbKeyStr, err := auth.RegisterAdmin(params, accessor)
+	if err != nil {
+		log.Panic(utils.RedColor.InitColor+"Failed to generate root admin: %v"+utils.EndColor, err)
+	}
+	params.PublicKey = pbKeyStr
+
+	jsonData, err := json.MarshalIndent(params, "", "  ")
+	if err != nil {
+		log.Fatalf("Erro ao converter para JSON: %v", err)
+	}
+
+	log.Printf(utils.GreenColor.InitColor+"\n Admin registred successfully: %v"+utils.EndColor, message1)
+	log.Printf(string(jsonData))
+
+	message2 := res.SignupRes{
+		User: res.UserGetedResponse{
+			FirstName: body.FirstName,
+			LastName:  body.LastName,
+			Email:     body.Email,
+		},
+		Message: "Admin fields sent, if everything is ok with the first message you should just wait for approval. Again, remember to save your private key, and in a secure location, it's unique and we don't have access to it.",
+	}
+
+	response := res.AdminSignup{
+		Message1: message1,
+		Message2: message2,
+	}
+
+	RespondWithJSON(w, http.StatusCreated, response)
+}
+
 func ApproveArticleHandler(w http.ResponseWriter, r *http.Request) {
 	// verify header
 	encryptedHeader := r.Header.Get("Encrypted")
